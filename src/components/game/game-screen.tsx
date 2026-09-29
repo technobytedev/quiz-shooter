@@ -9,9 +9,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { configForLevel } from '@/game/difficulty';
 import { createRng } from '@/game/random';
 import { createGameReducer, createInitialState } from '@/game/reducer';
+import { SUBJECTS } from '@/game/subjects';
 import { useBestScore } from '@/hooks/use-best-score';
 
 import { AnswerPad } from './answer-pad';
@@ -38,12 +38,14 @@ export function GameScreen() {
   const shake = useSharedValue(0);
   const {
     phase,
+    subject,
     score,
     level,
     lives,
     question,
     disabledChoices,
     destroying,
+    revealing,
     lastPoints,
     damageCount,
     hitCount,
@@ -85,19 +87,20 @@ export function GameScreen() {
   const handleAnswer = useCallback(
     (value: string) => {
       if (!question) return;
-      // The reducer ignores taps while paused or shattering, so don't buzz for them either.
-      if (phase === 'playing' && !destroying && value === question.answer) {
+      // The reducer ignores taps while paused, shattering or revealing, so don't buzz for them either.
+      if (phase === 'playing' && !destroying && !revealing && value === question.answer) {
         haptic(Haptics.ImpactFeedbackStyle.Light);
       }
       // Tagged with the tapped question's id so the reducer can drop a tap that lands after it was replaced.
       dispatch({ type: 'ANSWER', questionId: question.id, value, progress: progress.get() });
     },
-    [phase, destroying, question, progress],
+    [phase, destroying, revealing, question, progress],
   );
 
   // Stable identities matter: FallingQuestion restarts its fall when these change.
   const handleHit = useCallback(() => dispatch({ type: 'QUESTION_HIT' }), []);
   const handleDestroyed = useCallback(() => dispatch({ type: 'DESTROY_DONE' }), []);
+  const handleRevealed = useCallback(() => dispatch({ type: 'REVEAL_DONE' }), []);
   const handlePause = useCallback(() => dispatch({ type: 'PAUSE' }), []);
   const handleResume = useCallback(() => dispatch({ type: 'RESUME' }), []);
 
@@ -111,13 +114,16 @@ export function GameScreen() {
         <Animated.View style={[styles.playArea, shakeStyle]}>
           <FallingQuestion
             question={question}
-            fallMs={configForLevel(level).fallMs}
+            subject={subject}
+            fallMs={SUBJECTS[subject].fallMs(level)}
             paused={phase !== 'playing'}
             destroying={destroying}
+            revealing={revealing}
             lastPoints={lastPoints}
             progress={progress}
             onHit={handleHit}
             onDestroyed={handleDestroyed}
+            onRevealed={handleRevealed}
           />
           <Hero firing={destroying} hitCount={hitCount} />
         </Animated.View>
@@ -125,7 +131,8 @@ export function GameScreen() {
           questionId={question?.id ?? null}
           choices={question?.choices ?? []}
           disabledChoices={disabledChoices}
-          locked={phase !== 'playing' || destroying}
+          highlightedChoice={revealing && question ? question.answer : null}
+          locked={phase !== 'playing' || destroying || revealing}
           onAnswer={handleAnswer}
         />
       </SafeAreaView>

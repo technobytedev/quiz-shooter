@@ -14,15 +14,21 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import type { Question } from '@/game/question';
+import type { SubjectId } from '@/game/subjects';
 
 import { GameColors } from './colors';
-import { CARD_HEIGHT, CARD_WIDTH, HERO_HEIGHT } from './layout';
+import { cardSizeFor, HERO_HEIGHT } from './layout';
 
 const BULLET_MS = 150;
 // Fragments finish at FRAGMENT_END of the break; the remainder is the ~300ms gap before the next question.
 const BREAK_MS = 750;
 const FRAGMENT_END = 0.6;
 const BULLET_HEIGHT = 18;
+// How long a missed question's answer stays on show.
+const REVEAL_MS = 1500;
+const BLANK = '___';
+// How the blank looks on the card.
+const BLANK_GAP = '_____';
 const FRAGMENTS = [
   { dx: -1, dy: -0.7, spin: -220 },
   { dx: 1, dy: -0.7, spin: 200 },
@@ -34,35 +40,45 @@ const FRAGMENTS = [
 
 interface FallingQuestionProps {
   question: Question | null;
+  subject: SubjectId;
   fallMs: number;
   paused: boolean;
   destroying: boolean;
+  revealing: boolean;
   lastPoints: number;
   progress: SharedValue<number>;
   onHit: () => void;
   onDestroyed: () => void;
+  onRevealed: () => void;
 }
 
 export function FallingQuestion({
   question,
+  subject,
   fallMs,
   paused,
   destroying,
+  revealing,
   lastPoints,
   progress,
   onHit,
   onDestroyed,
+  onRevealed,
 }: FallingQuestionProps) {
-  const [playHeight, setPlayHeight] = useState(0);
+  const [playArea, setPlayArea] = useState({ width: 0, height: 0 });
   const bullet = useSharedValue(0);
   const shatter = useSharedValue(0);
+  const reveal = useSharedValue(0);
   // Id of the question whose fall was last started; tells a fresh question from a resume.
   const startedIdRef = useRef<number | null>(null);
   const questionId = question?.id ?? null;
-  const travel = Math.max(0, playHeight - HERO_HEIGHT - CARD_HEIGHT);
+  const card = cardSizeFor(subject, playArea.width);
+  const cardHeight = card.height;
+  const playHeight = playArea.height;
+  const travel = Math.max(0, playHeight - HERO_HEIGHT - cardHeight);
   const heroTop = Math.max(0, playHeight - HERO_HEIGHT);
 
-  // New question: back to the top, clear bullet/shatter. These sets are only queued to the UI
+  // New question: back to the top, clear bullet/shatter/reveal. These sets are only queued to the UI
   // runtime, so progress.get() can still return the previous question's value in the same commit.
   // The fall effect therefore never reads progress for a fresh question (see startedIdRef).
   // Keep this effect declared ABOVE the fall effect: effects run in declaration order, so its
@@ -72,16 +88,17 @@ export function FallingQuestion({
     progress.set(0);
     bullet.set(0);
     shatter.set(0);
-  }, [questionId, progress, bullet, shatter]);
+    reveal.set(0);
+  }, [questionId, progress, bullet, shatter, reveal]);
 
   // Fall for the full fallMs when the question is new, or resume for whatever time is left when
-  // it is the same question after a pause; freeze on pause or when shot. The queued reset above
-  // runs before the queued timing below, so a fresh fall starts from 0.
-  // The fall, bullet and shatter are game timing, not decoration, so they opt out of the OS
+  // it is the same question after a pause; freeze on pause, when shot, or while its answer is
+  // revealed. The queued reset above runs before the queued timing below, so a fresh fall starts from 0.
+  // The fall, bullet, shatter and reveal are game timing, not decoration, so they opt out of the OS
   // reduce-motion setting (reduceMotion: ReduceMotion.Never). With the default, Reanimated jumps
   // to the end and reports finished on the first frame, so every question would land instantly.
   useEffect(() => {
-    if (questionId === null || paused || destroying || playHeight === 0) return;
+    if (questionId === null || paused || destroying || revealing || playHeight === 0) return;
     const fresh = questionId !== startedIdRef.current;
     startedIdRef.current = questionId;
     const remaining = fresh ? fallMs : Math.max(0, fallMs * (1 - progress.get()));
@@ -91,7 +108,7 @@ export function FallingQuestion({
       }),
     );
     return () => cancelAnimation(progress);
-  }, [questionId, paused, destroying, playHeight, fallMs, progress, onHit]);
+  }, [questionId, paused, destroying, revealing, playHeight, fallMs, progress, onHit]);
 
   // Correct answer: bullet flies up, then the card shatters, then report back.
   useEffect(() => {
@@ -108,17 +125,28 @@ export function FallingQuestion({
     );
   }, [destroying, bullet, shatter, onDestroyed]);
 
+  // A miss: keep the answer on show for REVEAL_MS, then report back. Like the shatter, it keeps
+  // running through a pause.
+  useEffect(() => {
+    if (!revealing) return;
+    reveal.set(
+      withTiming(1, { duration: REVEAL_MS, reduceMotion: ReduceMotion.Never }, (finished) => {
+        if (finished) scheduleOnRN(onRevealed);
+      }),
+    );
+  }, [revealing, reveal, onRevealed]);
+
   const cardStyle = useAnimatedStyle(() => ({
-    // Hidden while shattering and once landed, so a new question's text never shows at the hero
-    // for the frame(s) before the queued progress reset arrives.
-    opacity: shatter.get() > 0 || progress.get() >= 1 ? 0 : 1,
+    // Hidden while shattering, and once landed unless its answer is being revealed, so a new
+    // question's text never shows at the hero for the frame(s) before the queued progress reset arrives.
+    opacity: shatter.get() > 0 || (progress.get() >= 1 && !revealing) ? 0 : 1,
     transform: [{ translateY: progress.get() * travel }],
   }));
 
   const bulletStyle = useAnimatedStyle(() => {
     const b = bullet.get();
     const start = heroTop - BULLET_HEIGHT;
-    const target = progress.get() * travel + CARD_HEIGHT;
+    const target = progress.get() * travel + cardHeight;
     return {
       opacity: b > 0 && b < 1 ? 1 : 0,
       transform: [{ translateY: start - b * (start - target) }],
@@ -126,7 +154,7 @@ export function FallingQuestion({
   });
 
   const burstStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: progress.get() * travel + CARD_HEIGHT / 2 }],
+    transform: [{ translateY: progress.get() * travel + cardHeight / 2 }],
   }));
 
   const pointsStyle = useAnimatedStyle(() => {
@@ -135,19 +163,14 @@ export function FallingQuestion({
   });
 
   return (
-    <View style={styles.root} onLayout={(e) => setPlayHeight(e.nativeEvent.layout.height)}>
+    <View
+      style={styles.root}
+      onLayout={(e) => setPlayArea({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}>
       {question && (
         <>
           <Animated.View style={[styles.cardLane, cardStyle]}>
-            <View style={styles.card}>
-              <Text
-                style={styles.cardText}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.5}
-                maxFontSizeMultiplier={1.4}>
-                {question.prompt}
-              </Text>
+            <View style={[styles.card, { width: card.width, height: cardHeight }]}>
+              <CardText question={question} subject={subject} revealing={revealing} />
             </View>
           </Animated.View>
           <Animated.View style={[styles.bullet, bulletStyle]} />
@@ -162,6 +185,38 @@ export function FallingQuestion({
         </>
       )}
     </View>
+  );
+}
+
+interface CardTextProps {
+  question: Question;
+  subject: SubjectId;
+  revealing: boolean;
+}
+
+// The prompt (English shows its blank as a gap), or on a miss the full answer with the answer highlighted.
+function CardText({ question, subject, revealing }: CardTextProps) {
+  const english = subject === 'english';
+  const [before, after] = revealing
+    ? [question.reveal.before, question.reveal.after]
+    : english
+      ? question.prompt.split(BLANK)
+      : [question.prompt, ''];
+  return (
+    <Text
+      style={english ? styles.sentenceText : styles.cardText}
+      numberOfLines={english ? 3 : 1}
+      adjustsFontSizeToFit
+      minimumFontScale={english ? 0.6 : 0.5}
+      maxFontSizeMultiplier={1.4}>
+      {before}
+      {revealing ? (
+        <Text style={styles.revealAnswer}>{question.answer}</Text>
+      ) : english ? (
+        <Text style={styles.blank}>{BLANK_GAP}</Text>
+      ) : null}
+      {after}
+    </Text>
   );
 }
 
@@ -188,14 +243,13 @@ const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, pointerEvents: 'none' },
   cardLane: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' },
   card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
     borderRadius: 16,
     borderWidth: 2,
     borderColor: GameColors.glow,
     backgroundColor: GameColors.card,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 12,
     shadowColor: GameColors.glow,
     shadowOpacity: 0.8,
     shadowRadius: 12,
@@ -208,6 +262,14 @@ const styles = StyleSheet.create({
     color: GameColors.cardText,
     fontVariant: ['tabular-nums'],
   },
+  sentenceText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: GameColors.cardText,
+    textAlign: 'center',
+  },
+  revealAnswer: { color: GameColors.revealText, fontWeight: '900' },
+  blank: { color: GameColors.blank, fontWeight: '800' },
   bullet: {
     position: 'absolute',
     top: 0,

@@ -16,11 +16,20 @@ interface AnswerPadProps {
   questionId: number | null;
   choices: string[];
   disabledChoices: string[];
+  // The correct choice while a missed question's answer is revealed.
+  highlightedChoice: string | null;
   locked: boolean;
   onAnswer: (value: string) => void;
 }
 
-export function AnswerPad({ questionId, choices, disabledChoices, locked, onAnswer }: AnswerPadProps) {
+export function AnswerPad({
+  questionId,
+  choices,
+  disabledChoices,
+  highlightedChoice,
+  locked,
+  onAnswer,
+}: AnswerPadProps) {
   return (
     <View style={styles.pad}>
       {questionId === null
@@ -31,6 +40,7 @@ export function AnswerPad({ questionId, choices, disabledChoices, locked, onAnsw
               key={`${questionId}-${value}`}
               value={value}
               wrong={disabledChoices.includes(value)}
+              highlighted={value === highlightedChoice}
               locked={locked}
               onPress={onAnswer}
             />
@@ -42,11 +52,12 @@ export function AnswerPad({ questionId, choices, disabledChoices, locked, onAnsw
 interface AnswerButtonProps {
   value: string;
   wrong: boolean;
+  highlighted: boolean;
   locked: boolean;
   onPress: (value: string) => void;
 }
 
-function AnswerButton({ value, wrong, locked, onPress }: AnswerButtonProps) {
+function AnswerButton({ value, wrong, highlighted, locked, onPress }: AnswerButtonProps) {
   const shake = useSharedValue(0);
 
   useEffect(() => {
@@ -67,8 +78,18 @@ function AnswerButton({ value, wrong, locked, onPress }: AnswerButtonProps) {
       <Pressable
         disabled={wrong || locked}
         onPress={() => onPress(value)}
-        style={({ pressed }) => [styles.button, wrong && styles.wrong, pressed && styles.pressed]}>
-        <Text style={[styles.label, wrong && styles.wrongLabel]} maxFontSizeMultiplier={1.4}>
+        style={({ pressed }) => [
+          styles.button,
+          wrong && styles.wrong,
+          highlighted && styles.correct,
+          pressed && styles.pressed,
+        ]}>
+        <Text
+          style={[styles.label, wrong && styles.wrongLabel, highlighted && styles.correctLabel]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+          maxFontSizeMultiplier={1.4}>
           {value}
         </Text>
       </Pressable>
@@ -92,10 +113,12 @@ const styles = StyleSheet.create({
     backgroundColor: GameColors.button,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   placeholder: { opacity: 0.4 },
   pressed: { borderColor: GameColors.glow, transform: [{ scale: 0.97 }] },
   wrong: { borderColor: GameColors.danger, backgroundColor: '#3A1426' },
+  correct: { borderColor: GameColors.success, backgroundColor: GameColors.revealButton },
   label: {
     fontSize: 28,
     fontWeight: '800',
@@ -103,4 +126,5 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   wrongLabel: { color: GameColors.danger },
+  correctLabel: { color: GameColors.success },
 });

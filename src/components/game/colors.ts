@@ -14,4 +14,8 @@ export const GameColors = {
   button: '#1B2350',
   buttonBorder: '#2E3A7A',
   star: '#FFFFFF',
+  // Revealed answer on the white card: darker than `success` so it stays readable.
+  revealText: '#0A8F4E',
+  revealButton: '#12382A',
+  blank: '#6B7BB8',
 } as const;
