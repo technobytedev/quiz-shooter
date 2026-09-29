@@ -137,9 +137,10 @@ export function FallingQuestion({
   }, [revealing, reveal, onRevealed]);
 
   const cardStyle = useAnimatedStyle(() => ({
-    // Hidden while shattering, and once landed unless its answer is being revealed, so a new
-    // question's text never shows at the hero for the frame(s) before the queued progress reset arrives.
-    opacity: shatter.get() > 0 || (progress.get() >= 1 && !revealing) ? 0 : 1,
+    // Hidden while shattering and after its reveal finishes, until the queued reset brings the next
+    // question in at the top. Shatter or reveal is 1 until that reset, so a new question's text never
+    // shows at the hero. A landed card is not hidden: it stays put until its reveal has run.
+    opacity: shatter.get() > 0 || reveal.get() >= 1 ? 0 : 1,
     transform: [{ translateY: progress.get() * travel }],
   }));
 
