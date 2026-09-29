@@ -79,7 +79,7 @@ export function GameScreen() {
 
   const handleStart = useCallback(() => {
     setBestAtStart(best);
-    dispatch({ type: 'START' });
+    dispatch({ type: 'START', subject: 'math' });
   }, [best]);
 
   const handleAnswer = useCallback(
