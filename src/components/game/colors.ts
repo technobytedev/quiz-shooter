@@ -1,0 +1,17 @@
+export const GameColors = {
+  background: '#0B1026',
+  backdrop: 'rgba(5, 8, 22, 0.85)',
+  panel: '#141B3D',
+  card: '#F5F7FF',
+  cardText: '#0B1026',
+  glow: '#5CE1FF',
+  hero: '#7C5CFF',
+  danger: '#FF4D6D',
+  bullet: '#FFE14D',
+  success: '#4DFF9A',
+  text: '#E8ECFF',
+  textDim: '#8A93B8',
+  button: '#1B2350',
+  buttonBorder: '#2E3A7A',
+  star: '#FFFFFF',
+} as const;
