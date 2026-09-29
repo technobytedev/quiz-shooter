@@ -1,12 +1,6 @@
 import { configForLevel, type Operator } from './difficulty';
+import type { Question } from './question';
 import { pick, randInt, shuffle, type Rng } from './random';
-
-export interface Question {
-  id: number;
-  text: string;
-  answer: number;
-  choices: number[];
-}
 
 export const OPERATOR_SYMBOL: Record<Operator, string> = {
   '+': '+',
@@ -18,7 +12,7 @@ export const OPERATOR_SYMBOL: Record<Operator, string> = {
 const SMALL_OFFSETS = [-3, -2, -1, 1, 2, 3];
 const LARGE_OFFSETS = [-10, 10];
 
-export function makeQuestion(level: number, rng: Rng, id: number): Question {
+export function makeMathQuestion(level: number, rng: Rng, id: number): Question {
   const config = configForLevel(level);
   const op = pick(rng, config.operators);
   let a: number;
@@ -52,7 +46,15 @@ export function makeQuestion(level: number, rng: Rng, id: number): Question {
       break;
   }
 
-  return { id, text: `${a} ${OPERATOR_SYMBOL[op]} ${b}`, answer, choices: makeChoices(answer, rng) };
+  const prompt = `${a} ${OPERATOR_SYMBOL[op]} ${b}`;
+  return {
+    id,
+    key: prompt,
+    prompt,
+    answer: String(answer),
+    choices: makeChoices(answer, rng).map(String),
+    reveal: { before: `${prompt} = `, after: '' },
+  };
 }
 
 export function makeChoices(answer: number, rng: Rng): number[] {

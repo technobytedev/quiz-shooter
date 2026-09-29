@@ -15,11 +15,11 @@ function idOf(state: GameState): number {
   return state.question!.id;
 }
 
-function answerOf(state: GameState): number {
+function answerOf(state: GameState): string {
   return state.question!.answer;
 }
 
-function wrongOf(state: GameState, skip: number[] = []): number {
+function wrongOf(state: GameState, skip: string[] = []): string {
   return state.question!.choices.find((c) => c !== state.question!.answer && !skip.includes(c))!;
 }
 
@@ -149,7 +149,7 @@ describe('gameReducer', () => {
   it('ends the game on a third wrong tap', () => {
     const { reduce, state: first } = start();
     let state = first;
-    const tapped: number[] = [];
+    const tapped: string[] = [];
     for (let i = 0; i < 3; i++) {
       const wrong = wrongOf(state, tapped);
       tapped.push(wrong);

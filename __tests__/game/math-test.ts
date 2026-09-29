@@ -1,5 +1,5 @@
 import { configForLevel } from '../../src/game/difficulty';
-import { makeChoices, makeQuestion, OPERATOR_SYMBOL } from '../../src/game/questions';
+import { makeChoices, makeMathQuestion, OPERATOR_SYMBOL } from '../../src/game/math';
 import { createRng } from '../../src/game/random';
 
 const EVAL: Record<string, (a: number, b: number) => number> = {
@@ -19,33 +19,43 @@ function expectValidChoices(choices: number[], answer: number) {
   }
 }
 
-describe('makeQuestion', () => {
+describe('makeMathQuestion', () => {
   it('produces valid questions across levels 1-12', () => {
     for (let level = 1; level <= 12; level++) {
       const allowed = configForLevel(level).operators.map((op) => OPERATOR_SYMBOL[op]);
       for (let seed = 1; seed <= 200; seed++) {
-        const q = makeQuestion(level, createRng(seed * 31 + level), 7);
-        const [a, op, b] = q.text.split(' ');
+        const q = makeMathQuestion(level, createRng(seed * 31 + level), 7);
+        const [a, op, b] = q.prompt.split(' ');
+        const answer = Number(q.answer);
         expect(q.id).toBe(7);
         expect(allowed).toContain(op);
-        expect(EVAL[op](Number(a), Number(b))).toBe(q.answer);
-        expect(Number.isInteger(q.answer)).toBe(true);
-        expect(q.answer).toBeGreaterThanOrEqual(0);
-        expectValidChoices(q.choices, q.answer);
+        expect(EVAL[op](Number(a), Number(b))).toBe(answer);
+        expect(Number.isInteger(answer)).toBe(true);
+        expect(answer).toBeGreaterThanOrEqual(0);
+        // Choices are canonical integer strings, so the answer pad shows "42", not "42.0".
+        expect(q.choices.every((c) => String(Number(c)) === c)).toBe(true);
+        expectValidChoices(q.choices.map(Number), answer);
       }
     }
   });
 
+  it('uses the prompt as the key and reveals "<prompt> = <answer>"', () => {
+    const q = makeMathQuestion(3, createRng(5), 1);
+    expect(q.key).toBe(q.prompt);
+    expect(q.reveal).toEqual({ before: `${q.prompt} = `, after: '' });
+    expect(q.reveal.before + q.answer + q.reveal.after).toBe(`${q.prompt} = ${q.answer}`);
+  });
+
   it('only uses addition at level 1', () => {
     for (let seed = 1; seed <= 50; seed++) {
-      expect(makeQuestion(1, createRng(seed), 1).text).toContain('+');
+      expect(makeMathQuestion(1, createRng(seed), 1).prompt).toContain('+');
     }
   });
 
   it('eventually produces every operator at level 4', () => {
     const seen = new Set<string>();
     for (let seed = 1; seed <= 200; seed++) {
-      seen.add(makeQuestion(4, createRng(seed), 1).text.split(' ')[1]);
+      seen.add(makeMathQuestion(4, createRng(seed), 1).prompt.split(' ')[1]);
     }
     expect([...seen].sort()).toEqual(['+', '×', '÷', '−'].sort());
   });

@@ -83,7 +83,7 @@ export function GameScreen() {
   }, [best]);
 
   const handleAnswer = useCallback(
-    (value: number) => {
+    (value: string) => {
       if (!question) return;
       // The reducer ignores taps while paused or shattering, so don't buzz for them either.
       if (phase === 'playing' && !destroying && value === question.answer) {

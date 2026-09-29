@@ -14,10 +14,10 @@ const PLACEHOLDERS = [0, 1, 2, 3];
 
 interface AnswerPadProps {
   questionId: number | null;
-  choices: number[];
-  disabledChoices: number[];
+  choices: string[];
+  disabledChoices: string[];
   locked: boolean;
-  onAnswer: (value: number) => void;
+  onAnswer: (value: string) => void;
 }
 
 export function AnswerPad({ questionId, choices, disabledChoices, locked, onAnswer }: AnswerPadProps) {
@@ -40,10 +40,10 @@ export function AnswerPad({ questionId, choices, disabledChoices, locked, onAnsw
 }
 
 interface AnswerButtonProps {
-  value: number;
+  value: string;
   wrong: boolean;
   locked: boolean;
-  onPress: (value: number) => void;
+  onPress: (value: string) => void;
 }
 
 function AnswerButton({ value, wrong, locked, onPress }: AnswerButtonProps) {

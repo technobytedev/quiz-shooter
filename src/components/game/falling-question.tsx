@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import type { Question } from '@/game/questions';
+import type { Question } from '@/game/question';
 
 import { GameColors } from './colors';
 import { CARD_HEIGHT, CARD_WIDTH, HERO_HEIGHT } from './layout';
@@ -146,7 +146,7 @@ export function FallingQuestion({
                 adjustsFontSizeToFit
                 minimumFontScale={0.5}
                 maxFontSizeMultiplier={1.4}>
-                {question.text}
+                {question.prompt}
               </Text>
             </View>
           </Animated.View>

@@ -1,5 +1,6 @@
 import { levelForScore } from './difficulty';
-import { makeQuestion, type Question } from './questions';
+import { makeMathQuestion } from './math';
+import type { Question } from './question';
 import type { Rng } from './random';
 import { pointsFor } from './scoring';
 
@@ -13,7 +14,7 @@ export interface GameState {
   level: number;
   lives: number;
   question: Question | null;
-  disabledChoices: number[];
+  disabledChoices: string[];
   destroying: boolean;
   lastPoints: number;
   nextId: number;
@@ -24,7 +25,7 @@ export interface GameState {
 
 export type GameAction =
   | { type: 'START' }
-  | { type: 'ANSWER'; questionId: number; value: number; progress: number }
+  | { type: 'ANSWER'; questionId: number; value: string; progress: number }
   | { type: 'QUESTION_HIT' }
   | { type: 'DESTROY_DONE' }
   | { type: 'PAUSE' }
@@ -50,7 +51,7 @@ export function createGameReducer(rng: Rng) {
   function withNextQuestion(state: GameState): GameState {
     return {
       ...state,
-      question: makeQuestion(state.level, rng, state.nextId),
+      question: makeMathQuestion(state.level, rng, state.nextId),
       nextId: state.nextId + 1,
       disabledChoices: [],
       destroying: false,
