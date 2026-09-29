@@ -65,6 +65,9 @@ export function FallingQuestion({
   // New question: back to the top, clear bullet/shatter. These sets are only queued to the UI
   // runtime, so progress.get() can still return the previous question's value in the same commit.
   // The fall effect therefore never reads progress for a fresh question (see startedIdRef).
+  // Keep this effect declared ABOVE the fall effect: effects run in declaration order, so its
+  // queued set(0) must reach the UI runtime before the fall's queued withTiming. Swapped, the
+  // reset lands after the fall starts and freezes the card, or a stale value causes an extra hit.
   useEffect(() => {
     progress.set(0);
     bullet.set(0);
@@ -106,7 +109,9 @@ export function FallingQuestion({
   }, [destroying, bullet, shatter, onDestroyed]);
 
   const cardStyle = useAnimatedStyle(() => ({
-    opacity: shatter.get() > 0 ? 0 : 1,
+    // Hidden while shattering and once landed, so a new question's text never shows at the hero
+    // for the frame(s) before the queued progress reset arrives.
+    opacity: shatter.get() > 0 || progress.get() >= 1 ? 0 : 1,
     transform: [{ translateY: progress.get() * travel }],
   }));
 
