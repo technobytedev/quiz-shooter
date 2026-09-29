@@ -82,10 +82,13 @@ export function GameScreen() {
 
   const handleAnswer = useCallback(
     (value: number) => {
-      if (question && value === question.answer) haptic(Haptics.ImpactFeedbackStyle.Light);
+      // The reducer ignores taps while paused or shattering, so don't buzz for them either.
+      if (phase === 'playing' && !destroying && question && value === question.answer) {
+        haptic(Haptics.ImpactFeedbackStyle.Light);
+      }
       dispatch({ type: 'ANSWER', value, progress: progress.get() });
     },
-    [question, progress],
+    [phase, destroying, question, progress],
   );
 
   // Stable identities matter: FallingQuestion restarts its fall when these change.

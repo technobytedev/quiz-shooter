@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -55,21 +55,29 @@ export function FallingQuestion({
   const [playHeight, setPlayHeight] = useState(0);
   const bullet = useSharedValue(0);
   const shatter = useSharedValue(0);
+  // Id of the question whose fall was last started; tells a fresh question from a resume.
+  const startedIdRef = useRef<number | null>(null);
   const questionId = question?.id ?? null;
   const travel = Math.max(0, playHeight - HERO_HEIGHT - CARD_HEIGHT);
   const heroTop = Math.max(0, playHeight - HERO_HEIGHT);
 
-  // New question: back to the top, clear bullet/shatter. Must stay above the fall effect.
+  // New question: back to the top, clear bullet/shatter. These sets are only queued to the UI
+  // runtime, so progress.get() can still return the previous question's value in the same commit.
+  // The fall effect therefore never reads progress for a fresh question (see startedIdRef).
   useEffect(() => {
     progress.set(0);
     bullet.set(0);
     shatter.set(0);
   }, [questionId, progress, bullet, shatter]);
 
-  // Fall (or resume falling) for whatever time is left; freeze on pause or when shot.
+  // Fall for the full fallMs when the question is new, or resume for whatever time is left when
+  // it is the same question after a pause; freeze on pause or when shot. The queued reset above
+  // runs before the queued timing below, so a fresh fall starts from 0.
   useEffect(() => {
     if (questionId === null || paused || destroying || playHeight === 0) return;
-    const remaining = Math.max(0, fallMs * (1 - progress.get()));
+    const fresh = questionId !== startedIdRef.current;
+    startedIdRef.current = questionId;
+    const remaining = fresh ? fallMs : Math.max(0, fallMs * (1 - progress.get()));
     progress.set(
       withTiming(1, { duration: remaining, easing: Easing.linear }, (finished) => {
         if (finished) scheduleOnRN(onHit);
