@@ -17,21 +17,27 @@ export function Hud({ lives, level, score, canPause, onPause }: HudProps) {
     <View style={styles.hud}>
       <View style={styles.side}>
         {Array.from({ length: STARTING_LIVES }, (_, i) => (
-          <Text key={i} style={[styles.heart, i >= lives && styles.heartLost]}>
+          <Text key={i} style={[styles.heart, i >= lives && styles.heartLost]} maxFontSizeMultiplier={1.4}>
             ♥
           </Text>
         ))}
       </View>
-      <Text style={styles.level}>LV {level}</Text>
+      <Text style={styles.level} maxFontSizeMultiplier={1.4}>
+        LV {level}
+      </Text>
       <View style={[styles.side, styles.right]}>
-        <Text style={styles.score}>{score}</Text>
+        <Text style={styles.score} maxFontSizeMultiplier={1.4}>
+          {score}
+        </Text>
         <Pressable
           onPress={onPause}
           disabled={!canPause}
           hitSlop={12}
           accessibilityLabel="Pause"
           style={[styles.pause, !canPause && styles.hidden]}>
-          <Text style={styles.pauseLabel}>II</Text>
+          <Text style={styles.pauseLabel} maxFontSizeMultiplier={1.4}>
+            II
+          </Text>
         </Pressable>
       </View>
     </View>

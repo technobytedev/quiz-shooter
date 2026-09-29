@@ -135,7 +135,14 @@ export function FallingQuestion({
         <>
           <Animated.View style={[styles.cardLane, cardStyle]}>
             <View style={styles.card}>
-              <Text style={styles.cardText}>{question.text}</Text>
+              <Text
+                style={styles.cardText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+                maxFontSizeMultiplier={1.4}>
+                {question.text}
+              </Text>
             </View>
           </Animated.View>
           <Animated.View style={[styles.bullet, bulletStyle]} />
@@ -143,7 +150,9 @@ export function FallingQuestion({
             {FRAGMENTS.map((f, i) => (
               <Fragment key={i} shatter={shatter} {...f} />
             ))}
-            <Animated.Text style={[styles.points, pointsStyle]}>+{lastPoints}</Animated.Text>
+            <Animated.Text style={[styles.points, pointsStyle]} maxFontSizeMultiplier={1.4}>
+              +{lastPoints}
+            </Animated.Text>
           </Animated.View>
         </>
       )}

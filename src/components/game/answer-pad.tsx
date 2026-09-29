@@ -68,7 +68,9 @@ function AnswerButton({ value, wrong, locked, onPress }: AnswerButtonProps) {
         disabled={wrong || locked}
         onPress={() => onPress(value)}
         style={({ pressed }) => [styles.button, wrong && styles.wrong, pressed && styles.pressed]}>
-        <Text style={[styles.label, wrong && styles.wrongLabel]}>{value}</Text>
+        <Text style={[styles.label, wrong && styles.wrongLabel]} maxFontSizeMultiplier={1.4}>
+          {value}
+        </Text>
       </Pressable>
     </Animated.View>
   );
