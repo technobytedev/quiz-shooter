@@ -82,11 +82,13 @@ export function GameScreen() {
 
   const handleAnswer = useCallback(
     (value: number) => {
+      if (!question) return;
       // The reducer ignores taps while paused or shattering, so don't buzz for them either.
-      if (phase === 'playing' && !destroying && question && value === question.answer) {
+      if (phase === 'playing' && !destroying && value === question.answer) {
         haptic(Haptics.ImpactFeedbackStyle.Light);
       }
-      dispatch({ type: 'ANSWER', value, progress: progress.get() });
+      // Tagged with the tapped question's id so the reducer can drop a tap that lands after it was replaced.
+      dispatch({ type: 'ANSWER', questionId: question.id, value, progress: progress.get() });
     },
     [phase, destroying, question, progress],
   );

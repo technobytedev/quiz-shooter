@@ -24,7 +24,7 @@ export interface GameState {
 
 export type GameAction =
   | { type: 'START' }
-  | { type: 'ANSWER'; value: number; progress: number }
+  | { type: 'ANSWER'; questionId: number; value: number; progress: number }
   | { type: 'QUESTION_HIT' }
   | { type: 'DESTROY_DONE' }
   | { type: 'PAUSE' }
@@ -78,10 +78,13 @@ export function createGameReducer(rng: Rng) {
 
       case 'ANSWER': {
         const { question } = state;
+        // A tap on the previous question's buttons can be processed after the QUESTION_HIT that
+        // replaced it; it must not be judged against the new question.
         if (
           state.phase !== 'playing' ||
           state.destroying ||
           !question ||
+          action.questionId !== question.id ||
           state.disabledChoices.includes(action.value)
         ) {
           return state;
