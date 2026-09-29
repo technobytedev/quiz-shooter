@@ -11,8 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createRng } from '@/game/random';
 import { createGameReducer, createInitialState } from '@/game/reducer';
-import { SUBJECTS } from '@/game/subjects';
-import { useBestScore } from '@/hooks/use-best-score';
+import { SUBJECTS, type SubjectId } from '@/game/subjects';
+import { useBestScores } from '@/hooks/use-best-scores';
 
 import { AnswerPad } from './answer-pad';
 import { GameColors } from './colors';
@@ -30,9 +30,9 @@ function haptic(style: Haptics.ImpactFeedbackStyle) {
 export function GameScreen() {
   const [reducer] = useState(() => createGameReducer(createRng(Date.now())));
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
-  const { best, submit } = useBestScore();
-  // Best when the run began. It can be stale if the stored best finished loading after Play was
-  // pressed, so "New best!" also requires the score to reach the live best (see isNewBest below).
+  const { best, submit } = useBestScores();
+  // This subject's best when the run began. It can be stale if the stored best finished loading
+  // after the run started, so "New best!" also requires the score to reach the live best.
   const [bestAtStart, setBestAtStart] = useState(0);
   const progress = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -76,13 +76,22 @@ export function GameScreen() {
   }, [hitCount, shake]);
 
   useEffect(() => {
-    if (phase === 'gameover') submit(score);
-  }, [phase, score, submit]);
+    if (phase === 'gameover') submit(subject, score);
+  }, [phase, subject, score, submit]);
 
-  const handleStart = useCallback(() => {
-    setBestAtStart(best);
-    dispatch({ type: 'START', subject: 'math' });
-  }, [best]);
+  const handleStart = useCallback(
+    (next: SubjectId) => {
+      setBestAtStart(best[next]);
+      dispatch({ type: 'START', subject: next });
+    },
+    [best],
+  );
+
+  // Leaving mid-run still counts the run's score toward this subject's best.
+  const handleMenu = useCallback(() => {
+    submit(subject, score);
+    dispatch({ type: 'QUIT' });
+  }, [subject, score, submit]);
 
   const handleAnswer = useCallback(
     (value: string) => {
@@ -110,7 +119,14 @@ export function GameScreen() {
     <View style={styles.root}>
       <Starfield />
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-        <Hud lives={lives} level={level} score={score} canPause={phase === 'playing'} onPause={handlePause} />
+        <Hud
+          subject={subject}
+          lives={lives}
+          level={level}
+          score={score}
+          canPause={phase === 'playing'}
+          onPause={handlePause}
+        />
         <Animated.View style={[styles.playArea, shakeStyle]}>
           <FallingQuestion
             question={question}
@@ -138,11 +154,13 @@ export function GameScreen() {
       </SafeAreaView>
       <Overlay
         phase={phase}
+        subject={subject}
         score={score}
         best={best}
-        isNewBest={phase === 'gameover' && score > bestAtStart && score >= best}
+        isNewBest={phase === 'gameover' && score > bestAtStart && score >= best[subject]}
         onStart={handleStart}
         onResume={handleResume}
+        onMenu={handleMenu}
       />
     </View>
   );

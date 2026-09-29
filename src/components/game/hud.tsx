@@ -1,10 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { STARTING_LIVES } from '@/game/reducer';
+import { SUBJECTS, type SubjectId } from '@/game/subjects';
 
 import { GameColors } from './colors';
 
 interface HudProps {
+  subject: SubjectId;
   lives: number;
   level: number;
   score: number;
@@ -12,7 +14,7 @@ interface HudProps {
   onPause: () => void;
 }
 
-export function Hud({ lives, level, score, canPause, onPause }: HudProps) {
+export function Hud({ subject, lives, level, score, canPause, onPause }: HudProps) {
   return (
     <View style={styles.hud}>
       <View style={styles.side}>
@@ -22,9 +24,15 @@ export function Hud({ lives, level, score, canPause, onPause }: HudProps) {
           </Text>
         ))}
       </View>
-      <Text style={styles.level} maxFontSizeMultiplier={1.4}>
-        LV {level}
-      </Text>
+      {/* Subject on its own small line so "ENGLISH" + level fits a 320 px-wide screen. */}
+      <View style={styles.center}>
+        <Text style={styles.subject} maxFontSizeMultiplier={1.2}>
+          {SUBJECTS[subject].shortName}
+        </Text>
+        <Text style={styles.level} maxFontSizeMultiplier={1.4}>
+          LV {level}
+        </Text>
+      </View>
       <View style={[styles.side, styles.right]}>
         <Text style={styles.score} maxFontSizeMultiplier={1.4}>
           {score}
@@ -54,8 +62,10 @@ const styles = StyleSheet.create({
   },
   side: { flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 96 },
   right: { justifyContent: 'flex-end', gap: 12 },
+  center: { alignItems: 'center' },
   heart: { fontSize: 22, color: GameColors.danger },
   heartLost: { color: GameColors.buttonBorder },
+  subject: { fontSize: 10, fontWeight: '800', letterSpacing: 2, color: GameColors.textDim },
   level: { fontSize: 16, fontWeight: '700', letterSpacing: 2, color: GameColors.glow },
   score: {
     fontSize: 24,
