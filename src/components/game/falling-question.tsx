@@ -5,6 +5,7 @@ import Animated, {
   Easing,
   Extrapolation,
   interpolate,
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -73,13 +74,16 @@ export function FallingQuestion({
   // Fall for the full fallMs when the question is new, or resume for whatever time is left when
   // it is the same question after a pause; freeze on pause or when shot. The queued reset above
   // runs before the queued timing below, so a fresh fall starts from 0.
+  // The fall, bullet and shatter are game timing, not decoration, so they opt out of the OS
+  // reduce-motion setting (reduceMotion: ReduceMotion.Never). With the default, Reanimated jumps
+  // to the end and reports finished on the first frame, so every question would land instantly.
   useEffect(() => {
     if (questionId === null || paused || destroying || playHeight === 0) return;
     const fresh = questionId !== startedIdRef.current;
     startedIdRef.current = questionId;
     const remaining = fresh ? fallMs : Math.max(0, fallMs * (1 - progress.get()));
     progress.set(
-      withTiming(1, { duration: remaining, easing: Easing.linear }, (finished) => {
+      withTiming(1, { duration: remaining, easing: Easing.linear, reduceMotion: ReduceMotion.Never }, (finished) => {
         if (finished) scheduleOnRN(onHit);
       }),
     );
@@ -90,10 +94,10 @@ export function FallingQuestion({
   useEffect(() => {
     if (!destroying) return;
     bullet.set(
-      withTiming(1, { duration: BULLET_MS }, (finished) => {
+      withTiming(1, { duration: BULLET_MS, reduceMotion: ReduceMotion.Never }, (finished) => {
         if (!finished) return;
         shatter.set(
-          withTiming(1, { duration: BREAK_MS }, (done) => {
+          withTiming(1, { duration: BREAK_MS, reduceMotion: ReduceMotion.Never }, (done) => {
             if (done) scheduleOnRN(onDestroyed);
           }),
         );
