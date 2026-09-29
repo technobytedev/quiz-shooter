@@ -31,6 +31,8 @@ export function GameScreen() {
   const [reducer] = useState(() => createGameReducer(createRng(Date.now())));
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
   const { best, submit } = useBestScore();
+  // Best when the run began. It can be stale if the stored best finished loading after Play was
+  // pressed, so "New best!" also requires the score to reach the live best (see isNewBest below).
   const [bestAtStart, setBestAtStart] = useState(0);
   const progress = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -131,7 +133,7 @@ export function GameScreen() {
         phase={phase}
         score={score}
         best={best}
-        isNewBest={phase === 'gameover' && score > bestAtStart}
+        isNewBest={phase === 'gameover' && score > bestAtStart && score >= best}
         onStart={handleStart}
         onResume={handleResume}
       />
