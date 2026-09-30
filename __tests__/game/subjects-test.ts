@@ -17,6 +17,11 @@ describe('SUBJECTS', () => {
     expect(SUBJECTS.english).toMatchObject({ name: 'English', shortName: 'ENGLISH', badge: 'Aa' });
   });
 
+  it('gives math the short card and english the sentence card', () => {
+    expect(SUBJECTS.math.card).toBe('short');
+    expect(SUBJECTS.english.card).toBe('sentence');
+  });
+
   it('uses each subject own fall times', () => {
     for (const level of [1, 4, 7, 12]) {
       expect(SUBJECTS.math.fallMs(level)).toBe(configForLevel(level).fallMs);

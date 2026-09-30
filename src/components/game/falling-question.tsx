@@ -14,7 +14,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import type { Question } from '@/game/question';
-import type { SubjectId } from '@/game/subjects';
+import type { CardKind } from '@/game/subjects';
 
 import { GameColors } from './colors';
 import { cardSizeFor, HERO_HEIGHT } from './layout';
@@ -40,7 +40,7 @@ const FRAGMENTS = [
 
 interface FallingQuestionProps {
   question: Question | null;
-  subject: SubjectId;
+  card: CardKind;
   fallMs: number;
   paused: boolean;
   destroying: boolean;
@@ -54,7 +54,7 @@ interface FallingQuestionProps {
 
 export function FallingQuestion({
   question,
-  subject,
+  card,
   fallMs,
   paused,
   destroying,
@@ -72,8 +72,8 @@ export function FallingQuestion({
   // Id of the question whose fall was last started; tells a fresh question from a resume.
   const startedIdRef = useRef<number | null>(null);
   const questionId = question?.id ?? null;
-  const card = cardSizeFor(subject, playArea.width);
-  const cardHeight = card.height;
+  const cardSize = cardSizeFor(card, playArea.width);
+  const cardHeight = cardSize.height;
   const playHeight = playArea.height;
   const travel = Math.max(0, playHeight - HERO_HEIGHT - cardHeight);
   const heroTop = Math.max(0, playHeight - HERO_HEIGHT);
@@ -170,8 +170,8 @@ export function FallingQuestion({
       {question && (
         <>
           <Animated.View style={[styles.cardLane, cardStyle]}>
-            <View style={[styles.card, { width: card.width, height: cardHeight }]}>
-              <CardText question={question} subject={subject} revealing={revealing} />
+            <View style={[styles.card, { width: cardSize.width, height: cardHeight }]}>
+              <CardText question={question} card={card} revealing={revealing} />
             </View>
           </Animated.View>
           <Animated.View style={[styles.bullet, bulletStyle]} />
@@ -191,29 +191,29 @@ export function FallingQuestion({
 
 interface CardTextProps {
   question: Question;
-  subject: SubjectId;
+  card: CardKind;
   revealing: boolean;
 }
 
-// The prompt (English shows its blank as a gap), or on a miss the full answer with the answer highlighted.
-function CardText({ question, subject, revealing }: CardTextProps) {
-  const english = subject === 'english';
+// The prompt (a sentence shows its blank as a gap), or on a miss the full answer with the answer highlighted.
+function CardText({ question, card, revealing }: CardTextProps) {
+  const sentence = card === 'sentence';
   const [before, after] = revealing
     ? [question.reveal.before, question.reveal.after]
-    : english
+    : sentence
       ? question.prompt.split(BLANK)
       : [question.prompt, ''];
   return (
     <Text
-      style={english ? styles.sentenceText : styles.cardText}
-      numberOfLines={english ? 3 : 1}
+      style={sentence ? styles.sentenceText : styles.cardText}
+      numberOfLines={sentence ? 3 : 1}
       adjustsFontSizeToFit
-      minimumFontScale={english ? 0.6 : 0.5}
+      minimumFontScale={sentence ? 0.6 : 0.5}
       maxFontSizeMultiplier={1.4}>
       {before}
       {revealing ? (
         <Text style={styles.revealAnswer}>{question.answer}</Text>
-      ) : english ? (
+      ) : sentence ? (
         <Text style={styles.blank}>{BLANK_GAP}</Text>
       ) : null}
       {after}

@@ -130,7 +130,7 @@ export function GameScreen() {
         <Animated.View style={[styles.playArea, shakeStyle]}>
           <FallingQuestion
             question={question}
-            subject={subject}
+            card={SUBJECTS[subject].card}
             fallMs={SUBJECTS[subject].fallMs(level)}
             paused={phase !== 'playing'}
             destroying={destroying}

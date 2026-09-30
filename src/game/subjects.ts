@@ -7,11 +7,15 @@ import type { Rng } from './random';
 
 export type SubjectId = 'math' | 'english';
 
+// How a subject's falling card looks: one short line (e.g. "12 × 7") or a wrapped sentence with a blank.
+export type CardKind = 'short' | 'sentence';
+
 export interface Subject {
   id: SubjectId;
   name: string;
   shortName: string;
   badge: string;
+  card: CardKind;
   fallMs(level: number): number;
   makeQuestion(level: number, rng: Rng, id: number, usedKeys: readonly string[]): Question;
 }
@@ -22,6 +26,7 @@ export const SUBJECTS: Record<SubjectId, Subject> = {
     name: 'Mathematics',
     shortName: 'MATH',
     badge: '+−×÷',
+    card: 'short',
     fallMs: (level) => configForLevel(level).fallMs,
     // Math questions are generated fresh each time, so repeats are fine and usedKeys is ignored.
     makeQuestion: (level, rng, id) => makeMathQuestion(level, rng, id),
@@ -31,6 +36,7 @@ export const SUBJECTS: Record<SubjectId, Subject> = {
     name: 'English',
     shortName: 'ENGLISH',
     badge: 'Aa',
+    card: 'sentence',
     fallMs: sentenceFallMs,
     makeQuestion: (level, rng, id, usedKeys) => makeBankQuestion(ENGLISH_BANK, level, rng, id, usedKeys),
   },
