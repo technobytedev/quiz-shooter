@@ -1,5 +1,6 @@
 import { bandsForLevel, makeBankQuestion, sentenceFallMs, type BankItem } from '../../src/game/bank';
 import { ENGLISH_BANK } from '../../src/game/english-bank';
+import { GEOGRAPHY_BANK } from '../../src/game/geography-bank';
 import { createRng } from '../../src/game/random';
 import { SCIENCE_BANK } from '../../src/game/science-bank';
 
@@ -11,6 +12,7 @@ function item(id: string, band: BankItem['band']): BankItem {
 const BANKS: [string, readonly BankItem[]][] = [
   ['English', ENGLISH_BANK],
   ['Science', SCIENCE_BANK],
+  ['Geography', GEOGRAPHY_BANK],
 ];
 
 describe('bandsForLevel', () => {

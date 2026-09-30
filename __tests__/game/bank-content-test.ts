@@ -1,5 +1,6 @@
 import type { BankItem } from '../../src/game/bank';
 import { ENGLISH_BANK } from '../../src/game/english-bank';
+import { GEOGRAPHY_BANK } from '../../src/game/geography-bank';
 import { SCIENCE_BANK } from '../../src/game/science-bank';
 
 const BANDS = [1, 2, 3, 4, 5] as const;
@@ -11,6 +12,7 @@ const MAX_CHOICE_LENGTH = 16;
 const BANKS: [string, string, readonly BankItem[]][] = [
   ['English', 'en', ENGLISH_BANK],
   ['Science', 'sci', SCIENCE_BANK],
+  ['Geography', 'geo', GEOGRAPHY_BANK],
 ];
 
 describe.each(BANKS)('%s bank', (_name, prefix, bank) => {
