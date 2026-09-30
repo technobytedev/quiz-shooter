@@ -1,63 +1,104 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ordinal, type Player } from '@/game/players';
 import type { Phase } from '@/game/reducer';
 import { SUBJECT_IDS, SUBJECTS, type SubjectId } from '@/game/subjects';
-import type { BestScores } from '@/hooks/use-best-scores';
 
 import { GameColors } from './colors';
+import { menuStyles, PrimaryButton, SecondaryButton } from './menu-parts';
+import { PlayerPanel } from './player-panel';
 
 interface OverlayProps {
   phase: Phase;
   subject: SubjectId;
   score: number;
-  best: BestScores;
+  // The chosen player; null shows "Who's playing?" on the menu.
+  player: Player | null;
   isNewBest: boolean;
+  // The player's place on this subject's scoreboard, shown at game over; null hides the line.
+  rank: { rank: number; total: number } | null;
+  onChoosePlayer: (playerId: string) => void;
+  // Subject picker → Change: back to "Who's playing?".
+  onChangePlayer: () => void;
   onStart: (subject: SubjectId) => void;
   onResume: () => void;
-  // Pause → Menu and Game over → Change subject: back to the subject picker.
+  // Pause → Menu and Game over → Menu: back to "Who's playing?".
   onMenu: () => void;
 }
 
-export function Overlay({ phase, subject, score, best, isNewBest, onStart, onResume, onMenu }: OverlayProps) {
+export function Overlay({
+  phase,
+  subject,
+  score,
+  player,
+  isNewBest,
+  rank,
+  onChoosePlayer,
+  onChangePlayer,
+  onStart,
+  onResume,
+  onMenu,
+}: OverlayProps) {
   if (phase === 'playing') return null;
+  const best = player?.best[subject] ?? 0;
 
   return (
-    <View style={styles.backdrop}>
-      <View style={styles.panel}>
-        {phase === 'ready' && (
-          <>
-            <Text style={styles.title} maxFontSizeMultiplier={1.4}>
-              Quiz Shooter
-            </Text>
-            <Text style={styles.subtitle} maxFontSizeMultiplier={1.4}>
-              Pick your subject
-            </Text>
-            <View style={styles.subjectGrid}>
-              {SUBJECT_IDS.map((id) => (
-                <SubjectTile key={id} subject={id} best={best[id]} onPress={() => onStart(id)} />
-              ))}
-            </View>
-          </>
-        )}
-        {phase === 'paused' && (
-          <>
-            <Text style={styles.title}>Paused</Text>
-            <PrimaryButton label="Resume" onPress={onResume} />
-            <SecondaryButton label="Menu" onPress={onMenu} />
-          </>
-        )}
-        {phase === 'gameover' && (
-          <>
-            <Text style={styles.title}>Game Over</Text>
-            {isNewBest && <Text style={styles.badge}>New best!</Text>}
-            <Text style={styles.stat}>Score {score}</Text>
-            <Text style={styles.statDim}>Best {best[subject]}</Text>
-            <PrimaryButton label="Play again" onPress={() => onStart(subject)} />
-            <SecondaryButton label="Change subject" onPress={onMenu} />
-          </>
-        )}
+    // "padding" on both platforms keeps the name form above the on-screen keyboard.
+    <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
+      <View style={styles.backdrop}>
+        <View style={styles.panel}>
+          {phase === 'ready' && !player && <PlayerPanel onChoose={onChoosePlayer} />}
+          {phase === 'ready' && player && (
+            <>
+              <Text style={menuStyles.title} maxFontSizeMultiplier={1.4}>
+                Quiz Shooter
+              </Text>
+              <Text style={menuStyles.subtitle} maxFontSizeMultiplier={1.4}>
+                Pick your subject
+              </Text>
+              <View style={styles.playingAs}>
+                <Text style={styles.playingAsText} numberOfLines={1} maxFontSizeMultiplier={1.4}>
+                  Playing as {player.name} ·{' '}
+                </Text>
+                <Pressable onPress={onChangePlayer} accessibilityRole="button" hitSlop={12}>
+                  <Text style={styles.change} maxFontSizeMultiplier={1.4}>
+                    Change
+                  </Text>
+                </Pressable>
+              </View>
+              <View style={menuStyles.grid}>
+                {SUBJECT_IDS.map((id) => (
+                  <SubjectTile key={id} subject={id} best={player.best[id]} onPress={() => onStart(id)} />
+                ))}
+              </View>
+            </>
+          )}
+          {phase === 'paused' && (
+            <>
+              <Text style={menuStyles.title}>Paused</Text>
+              <PrimaryButton label="Resume" onPress={onResume} />
+              <SecondaryButton label="Menu" onPress={onMenu} />
+            </>
+          )}
+          {phase === 'gameover' && (
+            <>
+              <Text style={menuStyles.title}>Game Over</Text>
+              {isNewBest && <Text style={styles.badge}>New best!</Text>}
+              <Text style={styles.stat}>Score {score}</Text>
+              {/* This game's score counts even before the saved best catches up with it. */}
+              <Text style={styles.statDim}>Best {Math.max(best, score)}</Text>
+              {rank && (
+                <Text style={styles.statDim}>
+                  {ordinal(rank.rank)} of {rank.total} in {SUBJECTS[subject].name}
+                </Text>
+              )}
+              <PrimaryButton label="Play again" onPress={() => onStart(subject)} />
+              <SecondaryButton label="Menu" onPress={onMenu} />
+            </>
+          )}
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -68,12 +109,12 @@ function SubjectTile({ subject, best, onPress }: { subject: SubjectId; best: num
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${name}, best ${best}`}
-      style={({ pressed }) => [styles.subjectTile, pressed && styles.pressed]}>
+      style={({ pressed }) => [menuStyles.tile, pressed && menuStyles.pressed]}>
       <Text style={styles.subjectBadge} maxFontSizeMultiplier={1.4}>
         {badge}
       </Text>
       <Text
-        style={styles.subjectName}
+        style={menuStyles.tileName}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.6}
@@ -87,39 +128,14 @@ function SubjectTile({ subject, best, onPress }: { subject: SubjectId; best: num
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-      <Text style={styles.buttonLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-      <Text style={styles.secondaryLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: GameColors.backdrop,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
+  keyboard: { ...StyleSheet.absoluteFill, backgroundColor: GameColors.backdrop },
+  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   panel: {
     width: '100%',
     maxWidth: 360,
+    // Never taller than the screen: the "Who's playing?" tiles scroll instead.
+    maxHeight: '100%',
     alignItems: 'center',
     gap: 12,
     padding: 28,
@@ -128,8 +144,6 @@ const styles = StyleSheet.create({
     borderColor: GameColors.buttonBorder,
     backgroundColor: GameColors.panel,
   },
-  title: { fontSize: 34, fontWeight: '900', color: GameColors.text, textAlign: 'center' },
-  subtitle: { fontSize: 15, color: GameColors.textDim, textAlign: 'center', marginBottom: 4 },
   badge: {
     fontSize: 14,
     fontWeight: '800',
@@ -142,42 +156,9 @@ const styles = StyleSheet.create({
   },
   stat: { fontSize: 22, fontWeight: '700', color: GameColors.text },
   statDim: { fontSize: 16, color: GameColors.textDim },
-  // Tiles wrap two per row, like the answer pad.
-  subjectGrid: { alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  subjectTile: {
-    flexBasis: '46%',
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: GameColors.glow,
-    backgroundColor: GameColors.button,
-  },
+  playingAs: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
+  playingAsText: { flexShrink: 1, fontSize: 15, color: GameColors.textDim },
+  change: { fontSize: 15, fontWeight: '800', color: GameColors.glow },
   subjectBadge: { fontSize: 22, fontWeight: '900', color: GameColors.glow },
-  // The name fills the tile's width, so a long name ("Mathematics") shrinks to fit instead of wrapping.
-  subjectName: { alignSelf: 'stretch', textAlign: 'center', fontSize: 18, fontWeight: '800', color: GameColors.text },
   subjectBest: { fontSize: 14, color: GameColors.textDim },
-  button: {
-    marginTop: 8,
-    alignSelf: 'stretch',
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: GameColors.glow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonLabel: { fontSize: 20, fontWeight: '800', color: GameColors.background },
-  secondaryButton: {
-    alignSelf: 'stretch',
-    height: 52,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: GameColors.buttonBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryLabel: { fontSize: 18, fontWeight: '700', color: GameColors.text },
-  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
 });

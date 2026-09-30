@@ -9,10 +9,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { rankOf } from '@/game/players';
 import { createRng } from '@/game/random';
 import { createGameReducer, createInitialState } from '@/game/reducer';
 import { SUBJECTS, type SubjectId } from '@/game/subjects';
-import { useBestScores } from '@/hooks/use-best-scores';
+import { usePlayers } from '@/hooks/players-store';
 
 import { AnswerPad } from './answer-pad';
 import { GameColors } from './colors';
@@ -30,9 +31,12 @@ function haptic(style: Haptics.ImpactFeedbackStyle) {
 export function GameScreen() {
   const [reducer] = useState(() => createGameReducer(createRng(Date.now())));
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
-  const { best, submit } = useBestScores();
-  // This subject's best when the run began. It can be stale if the stored best finished loading
-  // after the run started, so "New best!" also requires the score to reach the live best.
+  const { players, recordGame } = usePlayers();
+  // Who is playing: chosen on "Who's playing?" and cleared by Menu. The reducer never sees it.
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const player = players.find((candidate) => candidate.id === playerId) ?? null;
+  // The player's best in this subject when the run began. It can be stale if the saved players finished
+  // loading after the run started, so "New best!" also requires the score to reach the live best.
   const [bestAtStart, setBestAtStart] = useState(0);
   const progress = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -76,22 +80,26 @@ export function GameScreen() {
   }, [hitCount, shake]);
 
   useEffect(() => {
-    if (phase === 'gameover') submit(subject, score);
-  }, [phase, subject, score, submit]);
+    if (phase === 'gameover' && playerId) recordGame(playerId, subject, score);
+  }, [phase, playerId, subject, score, recordGame]);
 
   const handleStart = useCallback(
     (next: SubjectId) => {
-      setBestAtStart(best[next]);
+      setBestAtStart(player?.best[next] ?? 0);
       dispatch({ type: 'START', subject: next });
     },
-    [best],
+    [player],
   );
 
-  // Leaving mid-run still counts the run's score toward this subject's best.
+  // Leaving mid-run still counts the run's score toward the player's best (a finished game is already
+  // counted). Either way the menu starts again at "Who's playing?".
   const handleMenu = useCallback(() => {
-    submit(subject, score);
+    if (phase === 'paused' && playerId) recordGame(playerId, subject, score);
     dispatch({ type: 'QUIT' });
-  }, [subject, score, submit]);
+    setPlayerId(null);
+  }, [phase, playerId, subject, score, recordGame]);
+
+  const handleChangePlayer = useCallback(() => setPlayerId(null), []);
 
   const handleAnswer = useCallback(
     (value: string) => {
@@ -114,6 +122,7 @@ export function GameScreen() {
   const handleResume = useCallback(() => dispatch({ type: 'RESUME' }), []);
 
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.get() }] }));
+  const liveBest = player?.best[subject] ?? 0;
 
   return (
     <View style={styles.root}>
@@ -156,8 +165,11 @@ export function GameScreen() {
         phase={phase}
         subject={subject}
         score={score}
-        best={best}
-        isNewBest={phase === 'gameover' && score > bestAtStart && score >= best[subject]}
+        player={player}
+        isNewBest={phase === 'gameover' && score > bestAtStart && score >= liveBest}
+        rank={phase === 'gameover' && playerId ? rankOf(players, playerId, subject) : null}
+        onChoosePlayer={setPlayerId}
+        onChangePlayer={handleChangePlayer}
         onStart={handleStart}
         onResume={handleResume}
         onMenu={handleMenu}
