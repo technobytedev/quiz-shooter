@@ -1,13 +1,17 @@
 import { bandsForLevel, makeBankQuestion, sentenceFallMs, type BankItem } from '../../src/game/bank';
 import { ENGLISH_BANK } from '../../src/game/english-bank';
 import { createRng } from '../../src/game/random';
+import { SCIENCE_BANK } from '../../src/game/science-bank';
 
 function item(id: string, band: BankItem['band']): BankItem {
   return { id, band, sentence: `Sentence ${id} has a ___ here.`, answer: 'right', wrong: ['wrong1', 'wrong2', 'wrong3'] };
 }
 
 // Every real bank must build valid questions with the shared engine.
-const BANKS: [string, readonly BankItem[]][] = [['English', ENGLISH_BANK]];
+const BANKS: [string, readonly BankItem[]][] = [
+  ['English', ENGLISH_BANK],
+  ['Science', SCIENCE_BANK],
+];
 
 describe('bandsForLevel', () => {
   it.each([
