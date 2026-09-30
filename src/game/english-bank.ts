@@ -1,7 +1,7 @@
 import type { BankItem } from './bank';
 
 // Rules for every item (checked mechanically in __tests__/game/bank-content-test.ts, except the
-// first, which needs a human): exactly ONE choice is grammatical and natural in that exact sentence;
+// first and the last, which need a human): exactly ONE choice is grammatical and natural in that exact sentence;
 // context words (yesterday, every day, right now, since 2019...) rule out the others. Four choices
 // distinct ignoring case, 1-3 words and at most 16 characters, capitalised when the blank starts the
 // sentence; sentences at most 60 characters. American English.
