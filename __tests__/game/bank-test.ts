@@ -74,7 +74,7 @@ describe('makeBankQuestion', () => {
   });
 
   it('throws a clear error when a level has no items', () => {
-    expect(() => makeBankQuestion([item('x-1-001', 1)], 3, createRng(1), 1, [])).toThrow(/level 3/);
+    expect(() => makeBankQuestion([item('x-1-001', 1)], 3, createRng(1), 1, [])).toThrow('No questions for level 3');
   });
 });
 

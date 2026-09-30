@@ -26,8 +26,12 @@ export function Overlay({ phase, subject, score, best, isNewBest, onStart, onRes
       <View style={styles.panel}>
         {phase === 'ready' && (
           <>
-            <Text style={styles.title}>Quiz Shooter</Text>
-            <Text style={styles.subtitle}>Pick your subject</Text>
+            <Text style={styles.title} maxFontSizeMultiplier={1.4}>
+              Quiz Shooter
+            </Text>
+            <Text style={styles.subtitle} maxFontSizeMultiplier={1.4}>
+              Pick your subject
+            </Text>
             {SUBJECT_IDS.map((id) => (
               <SubjectButton key={id} subject={id} best={best[id]} onPress={() => onStart(id)} />
             ))}

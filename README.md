@@ -3,7 +3,7 @@
 A casual brain-training game for all ages. Pick a subject, and its questions fall from the top of the
 screen toward your hero:
 
-- **Mathematics:** sums such as `7 × 6`.
+- **Mathematics:** arithmetic such as `7 × 6`.
 - **English:** grammar sentences with a blank, such as `She ___ to school every day.`
 - **Science:** facts with a blank, such as `The planet closest to the Sun is ___.`
 
