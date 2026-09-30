@@ -2,6 +2,10 @@ import type { CardKind } from '@/game/subjects';
 
 // Height reserved at the bottom of the play area for the hero; its top is the danger line.
 export const HERO_HEIGHT = 76;
+// Gap between the bottom of the play area and the ship.
+export const HERO_BOTTOM_PADDING = 8;
+// The ship image (520 x 480) drawn at the same proportions, small enough to stand inside the hero strip.
+export const SHIP_SIZE = { width: 65, height: 60 };
 
 export interface CardSize {
   width: number;

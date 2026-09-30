@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,7 +8,10 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { GameColors } from './colors';
-import { HERO_HEIGHT } from './layout';
+import { HERO_BOTTOM_PADDING, HERO_HEIGHT, SHIP_SIZE } from './layout';
+
+const SHIP_IMAGE = require('@/assets/images/shooter-spaceship.png');
+const MUZZLE_SIZE = 14;
 
 interface HeroProps {
   firing: boolean;
@@ -37,11 +40,13 @@ export function Hero({ firing, hitCount }: HeroProps) {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.muzzle, muzzleStyle]} />
-      <View style={styles.barrel} />
-      <View>
-        <View style={styles.body} />
-        <Animated.View style={[styles.body, styles.damage, damageStyle]} />
+      <View style={styles.ship}>
+        <Image source={SHIP_IMAGE} style={styles.shipImage} resizeMode="contain" />
+        {/* The same ship tinted red, flashed when a question lands on it. */}
+        <Animated.View style={[styles.overlay, damageStyle]}>
+          <Image source={SHIP_IMAGE} style={[styles.shipImage, styles.damageTint]} resizeMode="contain" />
+        </Animated.View>
+        <Animated.View style={[styles.muzzle, muzzleStyle]} />
       </View>
     </View>
   );
@@ -56,38 +61,21 @@ const styles = StyleSheet.create({
     height: HERO_HEIGHT,
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingBottom: 8,
+    paddingBottom: HERO_BOTTOM_PADDING,
     pointerEvents: 'none',
   },
+  ship: { width: SHIP_SIZE.width, height: SHIP_SIZE.height },
+  shipImage: { width: SHIP_SIZE.width, height: SHIP_SIZE.height },
+  overlay: { ...StyleSheet.absoluteFill },
+  damageTint: { tintColor: GameColors.danger },
+  // Centered on the ship's nose, which is the top middle of the image.
   muzzle: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    marginBottom: -4,
-    backgroundColor: GameColors.bullet,
-  },
-  barrel: {
-    width: 8,
-    height: 20,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    backgroundColor: GameColors.glow,
-  },
-  // Triangle made from borders so no image assets are needed.
-  body: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 28,
-    borderRightWidth: 28,
-    borderBottomWidth: 36,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: GameColors.hero,
-  },
-  damage: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    borderBottomColor: GameColors.danger,
+    top: -MUZZLE_SIZE / 2,
+    left: (SHIP_SIZE.width - MUZZLE_SIZE) / 2,
+    width: MUZZLE_SIZE,
+    height: MUZZLE_SIZE,
+    borderRadius: MUZZLE_SIZE / 2,
+    backgroundColor: GameColors.bullet,
   },
 });
