@@ -15,8 +15,8 @@ export interface KeyValueStorage {
 
 export interface LoadedPlayers {
   players: Player[];
-  // False when the saved players could not be read, or could not be copied aside: then nothing may be
-  // saved over them for the rest of the session.
+  // False when the saved players (or an old best being moved to "Player 1") could not be read, or could
+  // not be copied aside: then nothing may be saved for the rest of the session.
   canSave: boolean;
 }
 
@@ -30,7 +30,10 @@ export async function loadPlayers(storage: KeyValueStorage, newId: () => string,
   }
 
   if (raw === null) {
-    const players = await playersFromLegacyBests(storage, newId, now);
+    const { players, allRead } = await playersFromLegacyBests(storage, newId, now);
+    // An old best that could not be read would be lost for good once the players key exists, so nothing
+    // is saved: the move runs again on the next launch.
+    if (!allRead) return { players, canSave: false };
     await savePlayers(storage, players);
     return { players, canSave: true };
   }
@@ -45,13 +48,22 @@ export async function loadPlayers(storage: KeyValueStorage, newId: () => string,
   }
 }
 
-async function playersFromLegacyBests(storage: KeyValueStorage, newId: () => string, now: number): Promise<Player[]> {
+async function playersFromLegacyBests(
+  storage: KeyValueStorage,
+  newId: () => string,
+  now: number,
+): Promise<{ players: Player[]; allRead: boolean }> {
   const saved = await Promise.all(
-    SUBJECT_IDS.map((subject) => storage.getItem(BEST_SCORE_KEYS[subject]).catch(() => null)),
+    SUBJECT_IDS.map((subject) =>
+      storage.getItem(BEST_SCORE_KEYS[subject]).then(
+        (value) => ({ ok: true, value }),
+        () => ({ ok: false, value: null }),
+      ),
+    ),
   );
-  const best = bestsFrom(Object.fromEntries(SUBJECT_IDS.map((subject, i) => [subject, Number(saved[i])])));
+  const best = bestsFrom(Object.fromEntries(SUBJECT_IDS.map((subject, i) => [subject, Number(saved[i].value)])));
   const player = playerFromLegacyBests(best, newId(), now);
-  return player ? [player] : [];
+  return { players: player ? [player] : [], allRead: saved.every((result) => result.ok) };
 }
 
 // Never throws: a failed write leaves the saved copy as it was, and the game keeps the players in memory.

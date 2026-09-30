@@ -62,7 +62,11 @@ export function Overlay({
                 <Text style={styles.playingAsText} numberOfLines={1} maxFontSizeMultiplier={1.4}>
                   Playing as {player.name} ·{' '}
                 </Text>
-                <Pressable onPress={onChangePlayer} accessibilityRole="button" hitSlop={12}>
+                <Pressable
+                  onPress={onChangePlayer}
+                  accessibilityRole="button"
+                  accessibilityLabel="Change player"
+                  hitSlop={12}>
                   <Text style={styles.change} maxFontSizeMultiplier={1.4}>
                     Change
                   </Text>

@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { rankOf } from '@/game/players';
+import { rankOf, recordGame as withGame } from '@/game/players';
 import { createRng } from '@/game/random';
 import { createGameReducer, createInitialState } from '@/game/reducer';
 import { SUBJECTS, type SubjectId } from '@/game/subjects';
@@ -36,8 +36,8 @@ export function GameScreen() {
   // Who is playing: chosen on "Who's playing?" and cleared by Menu. The reducer never sees it.
   const [playerId, setPlayerId] = useState<string | null>(null);
   const player = players.find((candidate) => candidate.id === playerId) ?? null;
-  // The player's best in this subject when the run began. It can be stale if the saved players finished
-  // loading after the run started, so "New best!" also requires the score to reach the live best.
+  // The player's best in this subject when the run began. "New best!" also requires the score to reach
+  // the live best, in case Play again is tapped before the last game's recording has landed.
   const [bestAtStart, setBestAtStart] = useState(0);
   const progress = useSharedValue(0);
   const shake = useSharedValue(0);
@@ -129,6 +129,9 @@ export function GameScreen() {
 
   const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.get() }] }));
   const liveBest = player?.best[subject] ?? 0;
+  // Ranked with this game already counted, so the line is right before the recording lands.
+  const rank =
+    phase === 'gameover' && playerId ? rankOf(withGame(players, playerId, subject, score, 0), playerId, subject) : null;
 
   return (
     <View style={styles.root}>
@@ -173,7 +176,7 @@ export function GameScreen() {
         score={score}
         player={player}
         isNewBest={phase === 'gameover' && score > bestAtStart && score >= liveBest}
-        rank={phase === 'gameover' && playerId ? rankOf(players, playerId, subject) : null}
+        rank={rank}
         onChoosePlayer={setPlayerId}
         onChangePlayer={handleChangePlayer}
         onStart={handleStart}

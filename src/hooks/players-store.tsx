@@ -41,13 +41,20 @@ export function PlayersProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    loadPlayers(AsyncStorage, newPlayerId, Date.now()).then((result) => {
-      if (cancelled) return;
-      latest.current = result.players;
-      canSave.current = result.canSave;
-      setPlayers(result.players);
-      setLoaded(true);
-    });
+    loadPlayers(AsyncStorage, newPlayerId, Date.now())
+      .then((result) => {
+        if (cancelled) return;
+        latest.current = result.players;
+        canSave.current = result.canSave;
+        setPlayers(result.players);
+        setLoaded(true);
+      })
+      .catch(() => {
+        // loadPlayers never rejects. If it ever did, the menu still opens, with saving off.
+        if (cancelled) return;
+        canSave.current = false;
+        setLoaded(true);
+      });
     return () => {
       cancelled = true;
     };

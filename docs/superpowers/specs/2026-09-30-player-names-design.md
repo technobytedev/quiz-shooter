@@ -156,7 +156,7 @@ The first time the app loads and `quiz-shooter:players` does not exist, the stor
 
 ### Failures
 
-As today, storage errors never stop the game. A failed read or write is ignored, and the game continues with the players in memory. The only exception is the "saves nothing" rule for unreadable data above.
+As today, storage errors never stop the game. A failed read or write is ignored, and the game continues with the players in memory. The exceptions are the "saves nothing" rule for unreadable data above, and two failed reads that also turn saving off for the session: a failed read of `quiz-shooter:players`, and a failed read of an old key during the move to Player 1. In the second case the move runs again on the next launch, so no old best is lost.
 
 ## 3. Architecture
 
@@ -256,6 +256,7 @@ Everything here is a pure function over plain data, so it is unit-tested directl
   - A later load ignores the old keys.
   - Unreadable data is copied to the damaged key, then the load returns an empty list.
   - A failed copy returns "saves off".
+  - A failed read of an old best returns "saves off" and saves nothing.
   - A failed read or write never throws.
 - **Existing tests stay green.** `__tests__/hooks/best-score-keys-test.ts` keeps pinning the four old keys, which the Player 1 move depends on.
 

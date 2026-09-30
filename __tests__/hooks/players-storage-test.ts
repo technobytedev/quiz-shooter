@@ -50,12 +50,21 @@ describe('loadPlayers', () => {
     expect(data.get(PLAYERS_KEY)).toBe(serializePlayers([]));
   });
 
-  it('treats unreadable old bests as 0', async () => {
-    const { storage } = fakeStorage({ [BEST_SCORE_KEYS.math]: 'lots', [BEST_SCORE_KEYS.science]: '5' }, [
-      BEST_SCORE_KEYS.english,
-    ]);
-    const loaded = await loadPlayers(storage, newId, 700);
-    expect(loaded.players).toEqual([player('p-new', 'Player 1', { science: 5 }, 700)]);
+  it('treats an old best that is not a number as 0', async () => {
+    const { storage, data } = fakeStorage({ [BEST_SCORE_KEYS.math]: 'lots', [BEST_SCORE_KEYS.science]: '5' });
+    const expected = [player('p-new', 'Player 1', { science: 5 }, 700)];
+    expect(await loadPlayers(storage, newId, 700)).toEqual({ players: expected, canSave: true });
+    expect(data.get(PLAYERS_KEY)).toBe(serializePlayers(expected));
+  });
+
+  it('turns saving off, and saves nothing, when an old best cannot be read', async () => {
+    const { storage, data } = fakeStorage({ [BEST_SCORE_KEYS.science]: '5' }, [BEST_SCORE_KEYS.english]);
+    expect(await loadPlayers(storage, newId, 700)).toEqual({
+      players: [player('p-new', 'Player 1', { science: 5 }, 700)],
+      canSave: false,
+    });
+    // The move runs again on the next launch, so the English best is not lost for good.
+    expect(data.has(PLAYERS_KEY)).toBe(false);
   });
 
   it('ignores the old bests once saved players exist', async () => {
@@ -73,8 +82,9 @@ describe('loadPlayers', () => {
   });
 
   it('turns saving off when unreadable saved players cannot be copied aside', async () => {
-    const { storage } = fakeStorage({ [PLAYERS_KEY]: 'not json {' }, [], [DAMAGED_PLAYERS_KEY]);
+    const { storage, data } = fakeStorage({ [PLAYERS_KEY]: 'not json {' }, [], [DAMAGED_PLAYERS_KEY]);
     expect(await loadPlayers(storage, newId, 700)).toEqual({ players: [], canSave: false });
+    expect(data.get(PLAYERS_KEY)).toBe('not json {');
   });
 
   it('turns saving off, without throwing, when the saved players cannot be read', async () => {
@@ -84,8 +94,10 @@ describe('loadPlayers', () => {
 
   it('does not throw when saving the first list fails', async () => {
     const { storage } = fakeStorage({ [BEST_SCORE_KEYS.math]: '30' }, [], [PLAYERS_KEY]);
-    const loaded = await loadPlayers(storage, newId, 700);
-    expect(loaded.players).toHaveLength(1);
+    expect(await loadPlayers(storage, newId, 700)).toEqual({
+      players: [player('p-new', 'Player 1', { math: 30 }, 700)],
+      canSave: true,
+    });
   });
 });
 

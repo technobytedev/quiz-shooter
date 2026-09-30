@@ -39,11 +39,11 @@ export function ScoreboardScreen({ initialSubject, highlightId }: ScoreboardScre
               ‹ Back
             </Text>
           </Pressable>
-          <Text style={styles.title} maxFontSizeMultiplier={1.4}>
+          <Text style={styles.title} maxFontSizeMultiplier={1.4} accessibilityRole="header">
             Scoreboard
           </Text>
         </View>
-        <View style={styles.tabs} accessibilityRole="tablist">
+        <View style={styles.tabs} accessibilityRole="tablist" accessibilityLabel="Subjects">
           {SUBJECT_IDS.map((id) => (
             <SubjectTab key={id} subject={id} selected={id === subject} onPress={() => setSubject(id)} />
           ))}

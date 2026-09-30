@@ -40,6 +40,7 @@ export function NameForm({ title, initialName, onSave, onCancel }: NameFormProps
           setError(null);
         }}
         onSubmitEditing={save}
+        submitBehavior="submit"
         placeholder="Name"
         placeholderTextColor={GameColors.textDim}
         autoFocus
