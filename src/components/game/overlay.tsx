@@ -32,9 +32,11 @@ export function Overlay({ phase, subject, score, best, isNewBest, onStart, onRes
             <Text style={styles.subtitle} maxFontSizeMultiplier={1.4}>
               Pick your subject
             </Text>
-            {SUBJECT_IDS.map((id) => (
-              <SubjectButton key={id} subject={id} best={best[id]} onPress={() => onStart(id)} />
-            ))}
+            <View style={styles.subjectGrid}>
+              {SUBJECT_IDS.map((id) => (
+                <SubjectTile key={id} subject={id} best={best[id]} onPress={() => onStart(id)} />
+              ))}
+            </View>
           </>
         )}
         {phase === 'paused' && (
@@ -59,25 +61,28 @@ export function Overlay({ phase, subject, score, best, isNewBest, onStart, onRes
   );
 }
 
-function SubjectButton({ subject, best, onPress }: { subject: SubjectId; best: number; onPress: () => void }) {
+function SubjectTile({ subject, best, onPress }: { subject: SubjectId; best: number; onPress: () => void }) {
   const { name, badge } = SUBJECTS[subject];
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${name}, best ${best}`}
-      style={({ pressed }) => [styles.subjectButton, pressed && styles.pressed]}>
+      style={({ pressed }) => [styles.subjectTile, pressed && styles.pressed]}>
       <Text style={styles.subjectBadge} maxFontSizeMultiplier={1.4}>
         {badge}
       </Text>
-      <View style={styles.subjectText}>
-        <Text style={styles.subjectName} maxFontSizeMultiplier={1.4}>
-          {name}
-        </Text>
-        <Text style={styles.subjectBest} maxFontSizeMultiplier={1.4}>
-          Best {best}
-        </Text>
-      </View>
+      <Text
+        style={styles.subjectName}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.7}
+        maxFontSizeMultiplier={1.4}>
+        {name}
+      </Text>
+      <Text style={styles.subjectBest} maxFontSizeMultiplier={1.4}>
+        Best {best}
+      </Text>
     </Pressable>
   );
 }
@@ -137,20 +142,22 @@ const styles = StyleSheet.create({
   },
   stat: { fontSize: 22, fontWeight: '700', color: GameColors.text },
   statDim: { fontSize: 16, color: GameColors.textDim },
-  subjectButton: {
-    alignSelf: 'stretch',
-    flexDirection: 'row',
+  // Tiles wrap two per row, like the answer pad.
+  subjectGrid: { alignSelf: 'stretch', flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  subjectTile: {
+    flexBasis: '46%',
+    flexGrow: 1,
     alignItems: 'center',
-    gap: 16,
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     borderRadius: 16,
     borderWidth: 2,
     borderColor: GameColors.glow,
     backgroundColor: GameColors.button,
   },
-  subjectBadge: { width: 64, textAlign: 'center', fontSize: 22, fontWeight: '900', color: GameColors.glow },
-  subjectText: { flex: 1 },
-  subjectName: { fontSize: 22, fontWeight: '800', color: GameColors.text },
+  subjectBadge: { fontSize: 22, fontWeight: '900', color: GameColors.glow },
+  // The name fills the tile's width, so a long name ("Mathematics") shrinks to fit instead of wrapping.
+  subjectName: { alignSelf: 'stretch', textAlign: 'center', fontSize: 18, fontWeight: '800', color: GameColors.text },
   subjectBest: { fontSize: 14, color: GameColors.textDim },
   button: {
     marginTop: 8,
