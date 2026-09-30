@@ -2,11 +2,12 @@ import { sentenceFallMs } from '../../src/game/bank';
 import { configForLevel } from '../../src/game/difficulty';
 import { ENGLISH_BANK } from '../../src/game/english-bank';
 import { createRng } from '../../src/game/random';
+import { SCIENCE_BANK } from '../../src/game/science-bank';
 import { SUBJECT_IDS, SUBJECTS } from '../../src/game/subjects';
 
 describe('SUBJECTS', () => {
-  it('lists math then english, each keyed by its own id', () => {
-    expect(SUBJECT_IDS).toEqual(['math', 'english']);
+  it('lists math, english then science, each keyed by its own id', () => {
+    expect(SUBJECT_IDS).toEqual(['math', 'english', 'science']);
     for (const id of SUBJECT_IDS) {
       expect(SUBJECTS[id].id).toBe(id);
     }
@@ -15,17 +16,20 @@ describe('SUBJECTS', () => {
   it('shows the names and badges from the spec', () => {
     expect(SUBJECTS.math).toMatchObject({ name: 'Mathematics', shortName: 'MATH', badge: '+−×÷' });
     expect(SUBJECTS.english).toMatchObject({ name: 'English', shortName: 'ENGLISH', badge: 'Aa' });
+    expect(SUBJECTS.science).toMatchObject({ name: 'Science', shortName: 'SCIENCE', badge: 'H₂O' });
   });
 
-  it('gives math the short card and english the sentence card', () => {
+  it('gives math the short card and the sentence subjects the sentence card', () => {
     expect(SUBJECTS.math.card).toBe('short');
     expect(SUBJECTS.english.card).toBe('sentence');
+    expect(SUBJECTS.science.card).toBe('sentence');
   });
 
   it('uses each subject own fall times', () => {
     for (const level of [1, 4, 7, 12]) {
       expect(SUBJECTS.math.fallMs(level)).toBe(configForLevel(level).fallMs);
       expect(SUBJECTS.english.fallMs(level)).toBe(sentenceFallMs(level));
+      expect(SUBJECTS.science.fallMs(level)).toBe(sentenceFallMs(level));
     }
   });
 
@@ -38,6 +42,12 @@ describe('SUBJECTS', () => {
   it('english makes questions from the bank and honours used keys', () => {
     const band1 = ENGLISH_BANK.filter((i) => i.band === 1).map((i) => i.id);
     const q = SUBJECTS.english.makeQuestion(1, createRng(1), 5, band1.slice(1));
+    expect(q.key).toBe(band1[0]);
+  });
+
+  it('science makes questions from its own bank and honours used keys', () => {
+    const band1 = SCIENCE_BANK.filter((i) => i.band === 1).map((i) => i.id);
+    const q = SUBJECTS.science.makeQuestion(1, createRng(1), 5, band1.slice(1));
     expect(q.key).toBe(band1[0]);
   });
 });

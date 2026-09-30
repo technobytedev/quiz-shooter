@@ -6,6 +6,7 @@ import {
   STARTING_LIVES,
   type GameState,
 } from '../../src/game/reducer';
+import { SCIENCE_BANK } from '../../src/game/science-bank';
 import type { SubjectId } from '../../src/game/subjects';
 
 type Reduce = ReturnType<typeof createGameReducer>;
@@ -62,6 +63,13 @@ describe('gameReducer', () => {
     const english = start(1, 'english').state;
     expect(english.subject).toBe('english');
     const source = ENGLISH_BANK.find((i) => i.id === english.question!.key);
+    expect(source?.band).toBe(1);
+  });
+
+  it('START with science draws the first question from the Science bank', () => {
+    const { state } = start(1, 'science');
+    expect(state.subject).toBe('science');
+    const source = SCIENCE_BANK.find((i) => i.id === state.question!.key);
     expect(source?.band).toBe(1);
   });
 

@@ -4,4 +4,5 @@ import type { SubjectId } from '@/game/subjects';
 export const BEST_SCORE_KEYS: Record<SubjectId, string> = {
   math: 'quiz-shooter:best-score',
   english: 'quiz-shooter:best-score:english',
+  science: 'quiz-shooter:best-score:science',
 };

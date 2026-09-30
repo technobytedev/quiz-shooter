@@ -8,4 +8,8 @@ describe('BEST_SCORE_KEYS', () => {
   it('gives English its own key', () => {
     expect(BEST_SCORE_KEYS.english).toBe('quiz-shooter:best-score:english');
   });
+
+  it('gives Science its own key', () => {
+    expect(BEST_SCORE_KEYS.science).toBe('quiz-shooter:best-score:science');
+  });
 });

@@ -67,8 +67,12 @@ function SubjectButton({ subject, best, onPress }: { subject: SubjectId; best: n
         {badge}
       </Text>
       <View style={styles.subjectText}>
-        <Text style={styles.subjectName}>{name}</Text>
-        <Text style={styles.subjectBest}>Best {best}</Text>
+        <Text style={styles.subjectName} maxFontSizeMultiplier={1.4}>
+          {name}
+        </Text>
+        <Text style={styles.subjectBest} maxFontSizeMultiplier={1.4}>
+          Best {best}
+        </Text>
       </View>
     </Pressable>
   );

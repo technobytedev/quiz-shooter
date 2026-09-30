@@ -9,7 +9,7 @@ export type BestScores = Record<SubjectId, number>;
 
 // Storage failures are swallowed: the game keeps working with the in-memory bests.
 export function useBestScores() {
-  const [best, setBest] = useState<BestScores>({ math: 0, english: 0 });
+  const [best, setBest] = useState<BestScores>({ math: 0, english: 0, science: 0 });
 
   useEffect(() => {
     let cancelled = false;
