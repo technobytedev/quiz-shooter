@@ -1,18 +1,11 @@
-export interface EnglishItem {
-  id: string;
-  band: 1 | 2 | 3 | 4 | 5;
-  // Contains exactly one "___" (three underscores): the blank.
-  sentence: string;
-  answer: string;
-  wrong: [string, string, string];
-}
+import type { BankItem } from './bank';
 
 // Rules for every item (checked mechanically in __tests__/game/english-bank-test.ts, except the
 // first, which needs a human): exactly ONE choice is grammatical and natural in that exact sentence;
 // context words (yesterday, every day, right now, since 2019...) rule out the others. Four choices
 // distinct ignoring case, 1-3 words, capitalised when the blank starts the sentence. American English.
 // Bands: 1 basics, 2 everyday tenses, 3 building sentences, 4 getting tricky, 5 tricky usage.
-export const ENGLISH_BANK: readonly EnglishItem[] = [
+export const ENGLISH_BANK: readonly BankItem[] = [
   // Band 1: a/an, am/is/are, plurals, this/these, have/has
   { id: 'en-1-001', band: 1, sentence: 'I ___ a student.', answer: 'am', wrong: ['is', 'are', 'be'] },
   { id: 'en-1-002', band: 1, sentence: 'She ___ my sister.', answer: 'is', wrong: ['am', 'are', 'be'] },

@@ -1,5 +1,6 @@
+import { makeBankQuestion, sentenceFallMs } from './bank';
 import { configForLevel } from './difficulty';
-import { englishFallMs, makeEnglishQuestion } from './english';
+import { ENGLISH_BANK } from './english-bank';
 import { makeMathQuestion } from './math';
 import type { Question } from './question';
 import type { Rng } from './random';
@@ -30,8 +31,8 @@ export const SUBJECTS: Record<SubjectId, Subject> = {
     name: 'English',
     shortName: 'ENGLISH',
     badge: 'Aa',
-    fallMs: englishFallMs,
-    makeQuestion: (level, rng, id, usedKeys) => makeEnglishQuestion(level, rng, id, usedKeys),
+    fallMs: sentenceFallMs,
+    makeQuestion: (level, rng, id, usedKeys) => makeBankQuestion(ENGLISH_BANK, level, rng, id, usedKeys),
   },
 };
 

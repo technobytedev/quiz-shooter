@@ -1,5 +1,5 @@
+import { sentenceFallMs } from '../../src/game/bank';
 import { configForLevel } from '../../src/game/difficulty';
-import { englishFallMs } from '../../src/game/english';
 import { ENGLISH_BANK } from '../../src/game/english-bank';
 import { createRng } from '../../src/game/random';
 import { SUBJECT_IDS, SUBJECTS } from '../../src/game/subjects';
@@ -20,7 +20,7 @@ describe('SUBJECTS', () => {
   it('uses each subject own fall times', () => {
     for (const level of [1, 4, 7, 12]) {
       expect(SUBJECTS.math.fallMs(level)).toBe(configForLevel(level).fallMs);
-      expect(SUBJECTS.english.fallMs(level)).toBe(englishFallMs(level));
+      expect(SUBJECTS.english.fallMs(level)).toBe(sentenceFallMs(level));
     }
   });
 
