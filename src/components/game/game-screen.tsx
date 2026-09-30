@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { AppState, Platform, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -101,6 +102,11 @@ export function GameScreen() {
 
   const handleChangePlayer = useCallback(() => setPlayerId(null), []);
 
+  // From game over: this subject's tab with the player highlighted. From "Who's playing?": the first tab.
+  const handleScoreboard = useCallback(() => {
+    router.push({ pathname: '/scoreboard', params: playerId ? { subject, player: playerId } : {} });
+  }, [playerId, subject]);
+
   const handleAnswer = useCallback(
     (value: string) => {
       if (!question) return;
@@ -173,6 +179,7 @@ export function GameScreen() {
         onStart={handleStart}
         onResume={handleResume}
         onMenu={handleMenu}
+        onScoreboard={handleScoreboard}
       />
     </View>
   );

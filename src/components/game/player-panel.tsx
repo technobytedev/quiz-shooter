@@ -10,12 +10,13 @@ import { NameForm } from './name-form';
 
 interface PlayerPanelProps {
   onChoose: (playerId: string) => void;
+  onScoreboard: () => void;
 }
 
 type Form = { kind: 'new' } | { kind: 'rename'; player: Player };
 
 // "Who's playing?": pick a saved player, add a new one, or rename one in edit mode.
-export function PlayerPanel({ onChoose }: PlayerPanelProps) {
+export function PlayerPanel({ onChoose, onScoreboard }: PlayerPanelProps) {
   const { loaded, players, createPlayer, renamePlayer } = usePlayers();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Form | null>(null);
@@ -82,6 +83,7 @@ export function PlayerPanel({ onChoose }: PlayerPanelProps) {
             )}
           </ScrollView>
           <View style={styles.actions}>
+            <SecondaryButton label="Scoreboard" onPress={onScoreboard} maxFontSizeMultiplier={1.4} />
             {players.length > 0 && (
               <SecondaryButton
                 label={editing ? 'Done' : 'Edit names'}

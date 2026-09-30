@@ -24,6 +24,7 @@ interface OverlayProps {
   onResume: () => void;
   // Pause → Menu and Game over → Menu: back to "Who's playing?".
   onMenu: () => void;
+  onScoreboard: () => void;
 }
 
 export function Overlay({
@@ -38,6 +39,7 @@ export function Overlay({
   onStart,
   onResume,
   onMenu,
+  onScoreboard,
 }: OverlayProps) {
   if (phase === 'playing') return null;
   const best = player?.best[subject] ?? 0;
@@ -47,7 +49,7 @@ export function Overlay({
     <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
       <View style={styles.backdrop}>
         <View style={styles.panel}>
-          {phase === 'ready' && !player && <PlayerPanel onChoose={onChoosePlayer} />}
+          {phase === 'ready' && !player && <PlayerPanel onChoose={onChoosePlayer} onScoreboard={onScoreboard} />}
           {phase === 'ready' && player && (
             <>
               <Text style={menuStyles.title} maxFontSizeMultiplier={1.4}>
@@ -93,6 +95,7 @@ export function Overlay({
                 </Text>
               )}
               <PrimaryButton label="Play again" onPress={() => onStart(subject)} />
+              <SecondaryButton label="Scoreboard" onPress={onScoreboard} maxFontSizeMultiplier={1.4} />
               <SecondaryButton label="Menu" onPress={onMenu} />
             </>
           )}

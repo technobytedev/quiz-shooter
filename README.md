@@ -10,9 +10,12 @@ screen toward your hero:
 
 Tap the right answer out of four choices and the hero shoots the question apart before it lands. You
 have three lives: a wrong tap and a question reaching the hero each cost one, and a missed question
-shows its answer. Questions get harder and faster as your score climbs, and each subject's best score
-is saved on the device. Built with Expo, React Native and Reanimated, for portrait phones (web works
-as a bonus).
+shows its answer. Questions get harder and faster as your score climbs. Built with Expo, React Native
+and Reanimated, for portrait phones (web works as a bonus).
+
+Before each game, pick your name on "Who's playing?" or add a new one. Each player's best score in each
+subject is saved on the phone (no account or internet needed), and the Scoreboard ranks everyone,
+subject by subject.
 
 ## Run it
 
@@ -29,6 +32,7 @@ open it in the browser.
 ```bash
 npm test
 npx expo lint
+npx expo customize tsconfig.json   # regenerates the typed route types; `npx expo start` also does
 npx tsc --noEmit
 ```
 
@@ -36,6 +40,7 @@ npx tsc --noEmit
 
 - `src/game/` - pure TypeScript game logic (subjects, question banks, difficulty, scoring, state
   reducer) with no React or React Native imports. Its unit tests are in `__tests__/game/`.
-- `src/components/game/` - the game UI: screen, HUD, falling question, hero, answer pad, overlays.
-- `src/app/` - Expo Router routes (a single game screen).
-- `src/hooks/` - per-subject best-score persistence.
+- `src/components/game/` - the game UI: screen, HUD, falling question, hero, answer pad, menus.
+- `src/components/scoreboard/` - the Scoreboard screen.
+- `src/app/` - Expo Router routes: the game screen and the Scoreboard.
+- `src/hooks/` - the saved players: loading, saving, and the one shared copy the screens use.
