@@ -1,4 +1,5 @@
 import { ENGLISH_BANK } from '../../src/game/english-bank';
+import { GEOGRAPHY_BANK } from '../../src/game/geography-bank';
 import { createRng } from '../../src/game/random';
 import {
   createGameReducer,
@@ -70,6 +71,13 @@ describe('gameReducer', () => {
     const { state } = start(1, 'science');
     expect(state.subject).toBe('science');
     const source = SCIENCE_BANK.find((i) => i.id === state.question!.key);
+    expect(source?.band).toBe(1);
+  });
+
+  it('START with geography draws the first question from the Geography bank', () => {
+    const { state } = start(1, 'geography');
+    expect(state.subject).toBe('geography');
+    const source = GEOGRAPHY_BANK.find((i) => i.id === state.question!.key);
     expect(source?.band).toBe(1);
   });
 

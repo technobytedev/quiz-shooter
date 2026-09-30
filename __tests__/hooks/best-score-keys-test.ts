@@ -12,4 +12,8 @@ describe('BEST_SCORE_KEYS', () => {
   it('gives Science its own key', () => {
     expect(BEST_SCORE_KEYS.science).toBe('quiz-shooter:best-score:science');
   });
+
+  it('gives Geography its own key', () => {
+    expect(BEST_SCORE_KEYS.geography).toBe('quiz-shooter:best-score:geography');
+  });
 });

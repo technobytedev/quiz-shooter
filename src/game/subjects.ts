@@ -1,12 +1,13 @@
 import { makeBankQuestion, sentenceFallMs } from './bank';
 import { configForLevel } from './difficulty';
 import { ENGLISH_BANK } from './english-bank';
+import { GEOGRAPHY_BANK } from './geography-bank';
 import { makeMathQuestion } from './math';
 import type { Question } from './question';
 import type { Rng } from './random';
 import { SCIENCE_BANK } from './science-bank';
 
-export type SubjectId = 'math' | 'english' | 'science';
+export type SubjectId = 'math' | 'english' | 'science' | 'geography';
 
 // How a subject's falling card looks: one short line (e.g. "12 × 7") or a wrapped sentence with a blank.
 export type CardKind = 'short' | 'sentence';
@@ -50,7 +51,16 @@ export const SUBJECTS: Record<SubjectId, Subject> = {
     fallMs: sentenceFallMs,
     makeQuestion: (level, rng, id, usedKeys) => makeBankQuestion(SCIENCE_BANK, level, rng, id, usedKeys),
   },
+  geography: {
+    id: 'geography',
+    name: 'Geography',
+    shortName: 'GEOGRAPHY',
+    badge: 'N↑',
+    card: 'sentence',
+    fallMs: sentenceFallMs,
+    makeQuestion: (level, rng, id, usedKeys) => makeBankQuestion(GEOGRAPHY_BANK, level, rng, id, usedKeys),
+  },
 };
 
 // Display order on the subject picker.
-export const SUBJECT_IDS: readonly SubjectId[] = ['math', 'english', 'science'];
+export const SUBJECT_IDS: readonly SubjectId[] = ['math', 'english', 'science', 'geography'];

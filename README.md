@@ -6,6 +6,7 @@ screen toward your hero:
 - **Mathematics:** arithmetic such as `7 × 6`.
 - **English:** grammar sentences with a blank, such as `She ___ to school every day.`
 - **Science:** facts with a blank, such as `The planet closest to the Sun is ___.`
+- **Geography:** world facts with a blank, such as `The capital of Australia is ___.`
 
 Tap the right answer out of four choices and the hero shoots the question apart before it lands. You
 have three lives: a wrong tap and a question reaching the hero each cost one, and a missed question
