@@ -76,7 +76,7 @@ function SubjectTile({ subject, best, onPress }: { subject: SubjectId; best: num
         style={styles.subjectName}
         numberOfLines={1}
         adjustsFontSizeToFit
-        minimumFontScale={0.7}
+        minimumFontScale={0.6}
         maxFontSizeMultiplier={1.4}>
         {name}
       </Text>

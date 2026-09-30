@@ -24,7 +24,7 @@ export function Hud({ subject, lives, level, score, canPause, onPause }: HudProp
           </Text>
         ))}
       </View>
-      {/* Subject on its own small line so "ENGLISH" + level fits a 320 px-wide screen. */}
+      {/* Subject on its own small line so the longest name ("GEOGRAPHY") + level fits a 360 px-wide screen. */}
       <View style={styles.center}>
         <Text style={styles.subject} maxFontSizeMultiplier={1.2}>
           {SUBJECTS[subject].shortName}

@@ -1,7 +1,7 @@
 import type { Question } from './question';
 import { pick, shuffle, type Rng } from './random';
 
-// One fill-in-the-blank item in a subject's bank (English grammar, Science facts).
+// One fill-in-the-blank item in a subject's bank (English grammar, Science or Geography facts).
 export interface BankItem {
   id: string;
   band: 1 | 2 | 3 | 4 | 5;

@@ -33,7 +33,7 @@ A fourth subject no longer fits the picker's column of full-width buttons, so th
 - **Tile layout:**
   - Each tile stacks its badge (22 px), then the subject name (18 px), then "Best N" (14 px), centered.
   - All three texts have `maxFontSizeMultiplier={1.4}`.
-  - The name stays on one line and shrinks to fit (`numberOfLines={1}`, `adjustsFontSizeToFit`, `minimumFontScale={0.7}`), so "Mathematics" never wraps.
+  - The name stays on one line and shrinks to fit (`numberOfLines={1}`, `adjustsFontSizeToFit`, `minimumFontScale={0.6}`), so "Mathematics" never wraps.
 - **Tile sizing:** tiles wrap two per row, like the answer pad. Each tile has `flexBasis: '46%'` and `flexGrow: 1`, with a 12 px gap between tiles.
 - **Tile style:** each tile keeps today's subject-button look: glowing border, button background, pressed state.
 - **Accessibility and behavior:** the label stays "`<name>`, best `<N>`". Tapping a tile starts that subject, as today.
