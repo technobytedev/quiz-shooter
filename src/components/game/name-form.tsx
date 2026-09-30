@@ -55,8 +55,8 @@ export function NameForm({ title, initialName, onSave, onCancel }: NameFormProps
           {MESSAGES[error]}
         </Text>
       )}
-      <PrimaryButton label="Save" onPress={save} />
-      <SecondaryButton label="Cancel" onPress={onCancel} />
+      <PrimaryButton label="Save" onPress={save} maxFontSizeMultiplier={1.4} />
+      <SecondaryButton label="Cancel" onPress={onCancel} maxFontSizeMultiplier={1.4} />
     </>
   );
 }

@@ -83,7 +83,11 @@ export function PlayerPanel({ onChoose }: PlayerPanelProps) {
           </ScrollView>
           <View style={styles.actions}>
             {players.length > 0 && (
-              <SecondaryButton label={editing ? 'Done' : 'Edit names'} onPress={() => setEditing(!editing)} />
+              <SecondaryButton
+                label={editing ? 'Done' : 'Edit names'}
+                onPress={() => setEditing(!editing)}
+                maxFontSizeMultiplier={1.4}
+              />
             )}
           </View>
         </>

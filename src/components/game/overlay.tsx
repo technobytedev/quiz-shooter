@@ -88,7 +88,7 @@ export function Overlay({
               {/* This game's score counts even before the saved best catches up with it. */}
               <Text style={styles.statDim}>Best {Math.max(best, score)}</Text>
               {rank && (
-                <Text style={styles.statDim}>
+                <Text style={styles.statDim} maxFontSizeMultiplier={1.4}>
                   {ordinal(rank.rank)} of {rank.total} in {SUBJECTS[subject].name}
                 </Text>
               )}

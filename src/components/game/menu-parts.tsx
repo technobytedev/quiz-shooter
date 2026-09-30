@@ -5,24 +5,36 @@ import { GameColors } from './colors';
 // Buttons and styles shared by the menu panels (subject picker, "Who's playing?", name form, pause and
 // game over) and the Scoreboard screen, so they all look the same.
 
-export function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+interface ButtonProps {
+  label: string;
+  onPress: () => void;
+  // Caps the label's text size. Left unset, the label follows the OS text size uncapped, as the
+  // Pause and Game Over buttons always have.
+  maxFontSizeMultiplier?: number;
+}
+
+export function PrimaryButton({ label, onPress, maxFontSizeMultiplier }: ButtonProps) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [menuStyles.button, pressed && menuStyles.pressed]}>
-      <Text style={menuStyles.buttonLabel}>{label}</Text>
+      <Text style={menuStyles.buttonLabel} maxFontSizeMultiplier={maxFontSizeMultiplier}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
-export function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+export function SecondaryButton({ label, onPress, maxFontSizeMultiplier }: ButtonProps) {
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [menuStyles.secondaryButton, pressed && menuStyles.pressed]}>
-      <Text style={menuStyles.secondaryLabel}>{label}</Text>
+      <Text style={menuStyles.secondaryLabel} maxFontSizeMultiplier={maxFontSizeMultiplier}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
